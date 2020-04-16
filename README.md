@@ -11,3 +11,4 @@ ruby doIt.rb up_02/up_21 up_02/up_22
 
 ### Ausgabe:
 Insbesondere eine png-Datei, die die Ergebnisse visualisiert.
+![](data11_12.sol.png)
