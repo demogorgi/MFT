@@ -1,0 +1,11 @@
+*~
+*.sol*
+*.tbl*
+*.lp*
+*.log*
+archiv/
+bck/
+*.swp
+*.rb
+*.scip
+*_12.zpl
