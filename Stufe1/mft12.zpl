@@ -1,3 +1,11 @@
+# Skalierung der Kürzungspotenziale
+param sum_abs_zl := sum <n> in N: abs(zl[n]);
+param sum_abs_zu := sum <n> in N: abs(zu[n]);
+param sum_abs_B := sum <n> in N: abs(B[n]);
+param sc := 10;
+# hiermit wird geschaut, ob die Summe der Kürzungsschranken betragsmäßig m mal kleiner ist als die Summe der Beträge der Bilanzschießstände.
+# Falls das der Fall ist, werden die Kürzungsgrenzen so skaliert, das dies gerade nicht mehr der Fall ist.
+defnumb scale_z_bounds(sumAbsZb,sumAbsB) := if sumAbsZb < sc * sumAbsB then sc * sumAbsB / sumAbsZb else 1 end;
 
 # Maximal auftretende Kantenlänge
 param dmax := max <i, j> in E : dist[i, j];
@@ -236,6 +244,16 @@ do print '-RUBY-File.write(ARGV[0] + ".dot", dotFile)';
 do print '-RUBY-system("dot -Tpng -Gdpi=500 #{ARGV[0]}.dot > #{ARGV[0]}.png")';
 ###########################################################
 
+# Big-Ms für Produktmodellierung
+param Mu := aD * ( sum <n> in N: max(abs(ul[n]),abs(uu[n])) ) ** 2;
+param Mz := 10000; #if min <n> in N: min(abs(zl[n]), abs(zu[n])) > 0 then
+            #   aD * ( ( sum <n> in N: abs(B[n]) ) / ( min <n> in N: min(abs(zl[n]), abs(zu[n])) ) ) ** 2
+            #else
+            #   0
+            #end;
+do print "Mu = ", Mu;
+do print "Mz = ", Mz;
+
 ### Variablen
 # Kantenflussvariablen
 var f[E] real >= 0;
@@ -250,12 +268,20 @@ var unt_pos[N] real >= 0;
 var unt_neg[N] real >= 0;
 var unt_abs[N] real >= 0;
 var cru[N] real >= 0;
+var cru_x_s[N] real >= 0;
 # Kürzungsmodell
 var z[N] real >= -infinity;
 var kuz_pos[N] real >= 0;
 var kuz_neg[N] real >= 0;
 var kuz_abs[N] real >= 0;
 var crz[N] real >= 0;
+var crz_x_t[N] real >= 0;
+# Wenn alle Stricke reißen...
+var zz[N] >= -infinity;
+#...häng ich mich auf. Diese Variablen sollten in allen Testfällen 0 sein.
+
+var s[N] binary;
+var t[N] binary;
 
 # Unterbrechungsratio
 var Ru real >= 0 <= 1;
@@ -266,7 +292,7 @@ var y[N] real >= -1 <= 1;
 
 ### Zielfunktion
 # Minimiere Kosten
-minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n];
+minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru_x_s[n] + sum <n> in N: crz_x_t[n] + sum <n> in N: 1000000 * zz[n];
 
 ### Nebenbedingungen
 # Konvexe Kosten für Fluss
@@ -307,6 +333,27 @@ subto kabs2:
 subto puffergrenzen:
       forall <n> in N: pl[n] <= p[n] <= pu[n];
 #
+
+subto prod1:
+      forall <n> in N: Mu * s[n] >= unt_abs[n];
+subto prod2:
+      forall <n> in N: Mz * t[n] >= kuz_abs[n];
+
+subto prods1:
+      forall <n> in N: cru_x_s[n] <= Mu * s[n];
+subto prods2:
+      forall <n> in N: cru_x_s[n] <= cru[n];
+subto prods3:
+      forall <n> in N: cru_x_s[n] >= cru[n] - Mu * ( 1 - s[n] );
+
+subto prodz1:
+      forall <n> in N: crz_x_t[n] <= Mz * t[n];
+subto prodz2:
+      forall <n> in N: crz_x_t[n] <= crz[n];
+subto prodz3:
+      forall <n> in N: crz_x_t[n] >= crz[n] - Mz * ( 1 - t[n] );
+
+#
 subto unterbrechungsgrenzen:
       forall <n> in N: ul[n] <= u[n] <= uu[n];
 subto unterbrechungsbetragssumme:
@@ -320,28 +367,33 @@ subto unterbrechungsratio3:
       forall <n> in N do if ul[n] < 0 and uu[n] == 0 then - unt_neg[n]/ul[n] + x[n] == Ru end;
 subto unterbrechungsratio4:
       forall <n> in N do if ul[n] == 0 and uu[n] == 0 then unt_neg[n] + unt_pos[n] == 0 end;
-#
-#
-#subto kuerzungsgrenzen:
-#      forall <n> in N: zl[n] <= z[n] <= zu[n];
+
+
+subto kuerzungsgrenzen:
+      forall <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n] <= z[n] <= scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[n];
 subto kuerzungsbetragssumme:
       sum_abs_kuz == sum <n> in N: kuz_abs[n];
 
 subto kuerzungsratio1:
-      forall <n> in N do if zl[n] < 0 and zu[n] > 0 then - kuz_neg[n]/zl[n] + kuz_pos[n]/zu[n] + y[n] == Rz end;
+      forall <n> in N do if zl[n] < 0 and zu[n] > 0 then - kuz_neg[n]/(scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n]) + kuz_pos[n]/(scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[n]) + y[n] == Rz end;
 subto kuerzungsratio2:
-      forall <n> in N do if zl[n] == 0 and zu[n] > 0 then kuz_pos[n]/zu[n] + y[n] == Rz end;
+      forall <n> in N do if zl[n] == 0 and zu[n] > 0 then kuz_pos[n]/(scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[n]) + y[n] == Rz end;
 subto kuerzungsratio3:
-      forall <n> in N do if zl[n] < 0 and zu[n] == 0 then - kuz_neg[n]/zl[n] + y[n] == Rz end;
+      forall <n> in N do if zl[n] < 0 and zu[n] == 0 then - kuz_neg[n]/(scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n]) + y[n] == Rz end;
 subto kuerzungsratio4:
       forall <n> in N do if zl[n] == 0 and zu[n] == 0 then kuz_neg[n] + kuz_pos[n] == 0 end;
 
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flussbilanz:
       # Zufluss - Abfluss + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
-      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] == - B[n];
+      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + zz[n] == - B[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto kantenkapa:
       forall <i, j> in E: capl[i, j] <= f[i, j] <= capu[i, j];
 
+#do print "INFO:";
+#do print "sum_abs_zl = ",sum_abs_zl;
+#do print "sum_abs_B = ",sum_abs_B;
+#do forall <n> in N do print "old_lb = ", zl[n], ", new_lb = ", scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n];
+#do print "new_sum_abs_zl = ", sum <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * abs(zl[n]);
