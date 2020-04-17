@@ -1,5 +1,7 @@
-# Konstante sorgt in der ZF dafür, dass erst alles unterbrochen wird, was hilft
-param C := if sum <n> in N: max(abs(ul[n]),abs(uu[n])) == 0 then 100 else sum <n> in N: max(abs(ul[n]),abs(uu[n])) end;
+# Konstante C sorgt in der ZF dafür, dass erst alles unterbrochen wird, was hilft
+param c := sum <n> in N: max(abs(ul[n]),abs(uu[n]));
+param C := if c < 10 then 10 else c end;
+do print "c = ", c, ", C = ", C;
 
 ### Variablen
 # Kantenflussvariablen
