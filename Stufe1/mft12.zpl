@@ -39,7 +39,7 @@ param aB[<i> in N] := if pu[i] == pl[i] then 0 else 1 / ( 0.5 * ( pu[i] - pl[i] 
 # Abweichung vom gemeinsamem Ratio
 param dD := 0;
 param eD := 0;
-param aD := 100;
+param aD := 10000;
 
 # Modellierung Kantenkosten
 # Anzahl der Linearitätsbereiche
@@ -194,10 +194,10 @@ do print '-RUBY-end';
 do print '-RUBY-print("Unterbrechung: ")';
 do print '-RUBY-puts(interrupt)';
 #
-do print '-RUBY-InterruptCostSolution = File.open(ARGV[0]).grep(/^cru\$/)';
+do print '-RUBY-InterruptCostSolution = File.open(ARGV[0]).grep(/^cru_x_s\$/)';
 do print '-RUBY-if InterruptCostSolution != []';
 #do print '-RUBY-puts(InterruptCostSolution)';
-do print '-RUBY-    InterruptCostSolution.each{|x| cinterrupt[x.match(/^cru\$([^\s]+)/)[1].sub("$", "->")] = x.match(/\s(\S+)\s/)[1]}';
+do print '-RUBY-    InterruptCostSolution.each{|x| cinterrupt[x.match(/^cru_x_s\$([^\s]+)/)[1].sub("$", "->")] = x.match(/\s(\S+)\s/)[1]}';
 do print '-RUBY-end';
 do print '-RUBY-print("Unterbrechungskosten: ")';
 do print '-RUBY-puts(cinterrupt)';
@@ -210,10 +210,10 @@ do print '-RUBY-end';
 do print '-RUBY-print("Kuerzung: ")';
 do print '-RUBY-puts(curtail)';
 #
-do print '-RUBY-CurtailCostSolution = File.open(ARGV[0]).grep(/^crz\$/)';
+do print '-RUBY-CurtailCostSolution = File.open(ARGV[0]).grep(/^crz_x_t\$/)';
 do print '-RUBY-if CurtailCostSolution != []';
 #do print '-RUBY-    puts(CurtailCostSolution)';
-do print '-RUBY-    CurtailCostSolution.each{|x| ccurtail[x.match(/^crz\$([^\s]+)/)[1].sub("$", "->")] = x.match(/\s(\S+)\s/)[1]}';
+do print '-RUBY-    CurtailCostSolution.each{|x| ccurtail[x.match(/^crz_x_t\$([^\s]+)/)[1].sub("$", "->")] = x.match(/\s(\S+)\s/)[1]}';
 do print '-RUBY-end';
 do print '-RUBY-print("Kuerzungskosten: ")';
 do print '-RUBY-puts(ccurtail)';
@@ -235,8 +235,10 @@ do forall <n> in N with B[n] > 0 do print '-RUBY-dotFile << "', n, ' [ label = \
 do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'fbc490\" ];\n"';
 do forall <n> in N with B[n] <  0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [", pl[n], ", ", pu[n], "]: #{buffer['", n, "'].to_f.signif()} (#{cbuffer['", n, "'].to_f.signif()})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif()} (#{cinterrupt['", n, "'].to_f.signif()})\\nz in [", zl[n], ", ", zu[n], "]: #{curtail['", n, "'].to_f.signif()} (#{ccurtail['", n, "'].to_f.signif()})", '\"];\n"';
 #
-# FNB
-do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
+# Die nächste Zeile kann genutzt werden, wenn alle Kanten dargestellt werden sollen.
+#do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
+# Die nächste Zeile kann genutzt werden, wenn nur die Kanten mit Kosten durch Flüsse dargestellt werden sollen
+do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif() > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n" end';
 do print '-RUBY-dotFile << "\noverlap = false\n"';
 do print '-RUBY-dotFile << "\nlabeljust=left"';
 do print '-RUBY-dotFile << "\n}"';
@@ -245,12 +247,8 @@ do print '-RUBY-system("dot -Tpng -Gdpi=500 #{ARGV[0]}.dot > #{ARGV[0]}.png")';
 ###########################################################
 
 # Big-Ms für Produktmodellierung
-param Mu := aD * ( sum <n> in N: max(abs(ul[n]),abs(uu[n])) ) ** 2;
-param Mz := 10000; #if min <n> in N: min(abs(zl[n]), abs(zu[n])) > 0 then
-            #   aD * ( ( sum <n> in N: abs(B[n]) ) / ( min <n> in N: min(abs(zl[n]), abs(zu[n])) ) ) ** 2
-            #else
-            #   0
-            #end;
+param Mu := aD;
+param Mz := aD;
 do print "Mu = ", Mu;
 do print "Mz = ", Mz;
 
@@ -279,6 +277,9 @@ var crz_x_t[N] real >= 0;
 # Wenn alle Stricke reißen...
 var zz[N] >= -infinity;
 #...häng ich mich auf. Diese Variablen sollten in allen Testfällen 0 sein.
+var zz_neg[N] real >= 0;
+var zz_pos[N] real >= 0;
+var zz_abs[N] real >= 0;
 
 var s[N] binary;
 var t[N] binary;
@@ -292,7 +293,7 @@ var y[N] real >= -1 <= 1;
 
 ### Zielfunktion
 # Minimiere Kosten
-minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru_x_s[n] + sum <n> in N: crz_x_t[n] + sum <n> in N: 1000000 * zz[n];
+minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru_x_s[n] + sum <n> in N: crz_x_t[n] + sum <n> in N: 100000 * zz_abs[n] - sum <n> in N: ( s[n] + t[n] );
 
 ### Nebenbedingungen
 # Konvexe Kosten für Fluss
@@ -318,7 +319,7 @@ subto uabs1:
 subto uabs2:
       forall <n> in N: unt_abs[n] == unt_pos[n] + unt_neg[n];
 
-# Kürzingen
+# Kürzungen
 # k < 0 -> Entrykürzung
 # k > 0 -> Exitkürzung
 # Betrag der Kürzungen
@@ -327,13 +328,19 @@ subto kabs1:
 subto kabs2:
       forall <n> in N: kuz_abs[n] == kuz_pos[n] + kuz_neg[n];
 
+# Notfallvariable, um das Modell in jedem Fall zulässig zu machen
+subto slack1:
+      forall <n> in N: zz[n] == zz_pos[n] - zz_neg[n];
+subto slack2:
+      forall <n> in N: zz_abs[n] == zz_pos[n] + zz_neg[n];
+
 # Netzpuffernutzung
 # p < 0 -> Befüllung des Puffers
 # p > 0 -> Entnahme aus dem Puffer
 subto puffergrenzen:
       forall <n> in N: pl[n] <= p[n] <= pu[n];
-#
 
+# Modellierung der Produkte cru_x_s[n] = cru[n] * s[n] und crz_x_t[n] = crz[n] * t[n]
 subto prod1:
       forall <n> in N: Mu * s[n] >= unt_abs[n];
 subto prod2:
