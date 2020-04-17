@@ -8,4 +8,4 @@ bck/
 *.swp
 *.rb
 *.scip
-*_12.zpl
+*_12*.zpl
