@@ -241,18 +241,11 @@ subto kantenkapa:
       forall <i, j> in E: capl[i, j] <= f[i, j] <= capu[i, j];
 
 # info für schritt 1.3
-subto u_lb_info_fuer_mft13_1:
+subto lb_info_fuer_mft13_1:
       forall <i,j> in E with capl[i,j] > 0: u_lb_info[i,j] == f[i,j] - capl[i,j];
 
-subto u_lb_info_fuer_mft13_2:
+subto ub_info_fuer_mft13_2:
       forall <i,j> in E with capu[i,j] > 0: u_ub_info[i,j] == capu[i,j] - f[i,j];
-
-subto z_lb_info_fuer_mft13_1:
-      forall <i,j> in E with capl[i,j] > 0: z_lb_info[i,j] == f[i,j] - capl[i,j];
-
-subto z_lb_info_fuer_mft13_2:
-      forall <i,j> in E with capu[i,j] > 0: z_ub_info[i,j] == capu[i,j] - f[i,j];
-
 
 #do print "INFO:";
 #do print "sum_abs_zl = ",sum_abs_zl;
