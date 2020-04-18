@@ -152,11 +152,18 @@ puts "\nparam_u_1:"
 pp param_is_u = uuu - kein_c_u
 pp pu = param_is_u.map{|x| "\n<\"#{x}\"> 1"}
 puts param_u = "\nparam is_u[N] :=#{pu.join(',')} default 0;\n"
+### ACHTUNG der Fall [] muss noch besser behandelt werden.
+if !param_u.include?("<")
+    puts param_u = "\nparam is_u[N] :=#{pz.join(',')} <\"E\"> 0 default 0;"
+end
 puts "\nparam_z_1:"
 pp param_is_z = zzz - kein_c_z
 pp pz = param_is_z.map{|x| "\n<\"#{x}\"> 1"}
-### ACHTUNG der Fall [] muss noch behandelt werden.
-puts param_z = "\nparam is_z[N] :=#{pz.join(',')} <\"E\"> 0 default 0;"
+### ACHTUNG der Fall [] muss noch besser behandelt werden.
+puts param_z = "\nparam is_z[N] :=#{pz.join(',')} default 0;"
+if !param_z.include?("<")
+    puts param_z = "\nparam is_z[N] :=#{pz.join(',')} <\"E\"> 0 default 0;"
+end
 file_postpend(data2 + ".zpl", data3 + ".zpl", param_u + param_z)
 
 cons = "\n\n#Fixierungen aus Schritt 1.2\n"
