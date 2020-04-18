@@ -148,6 +148,11 @@ var x[N] real >= -1 <= 1;
 var Rz real >= 0 <= 1;
 var y[N] real >= -1 <= 1;
 
+var u_lb_info[E] real >= 0;
+var u_ub_info[E] real >= 0;
+var z_lb_info[E] real >= 0;
+var z_ub_info[E] real >= 0;
+
 ### Zielfunktion
 # Minimiere Kosten
 minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n] + sum <n> in N: 100000 * ZZ_abs[n];
@@ -234,6 +239,20 @@ subto flussbilanz:
 # Kapazitätsgrenzen müssen eingehalten werden
 subto kantenkapa:
       forall <i, j> in E: capl[i, j] <= f[i, j] <= capu[i, j];
+
+# info für schritt 1.3
+subto u_lb_info_fuer_mft13_1:
+      forall <i,j> in E with capl[i,j] > 0: u_lb_info[i,j] == f[i,j] - capl[i,j];
+
+subto u_lb_info_fuer_mft13_2:
+      forall <i,j> in E with capu[i,j] > 0: u_ub_info[i,j] == capu[i,j] - f[i,j];
+
+subto z_lb_info_fuer_mft13_1:
+      forall <i,j> in E with capl[i,j] > 0: z_lb_info[i,j] == f[i,j] - capl[i,j];
+
+subto z_lb_info_fuer_mft13_2:
+      forall <i,j> in E with capu[i,j] > 0: z_ub_info[i,j] == capu[i,j] - f[i,j];
+
 
 #do print "INFO:";
 #do print "sum_abs_zl = ",sum_abs_zl;

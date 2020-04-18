@@ -15,6 +15,9 @@ defnumb scale_z_bounds(sumAbsZb,sumAbsB) := if sumAbsZb == 0 then
 					       end
                                             end;
 
+## Prüfung ob noch freie Kapazität da ist (dann wird das Ratio mit optimiert, sonst nicht)
+#defnumb wirklich(a,lb_a,ub_a) := if a == lb_a or a == ub_a then 0 else 1 end;
+
 # Maximal auftretende Kantenlänge
 param dmax := max <i, j> in E : dist[i, j];
 
@@ -380,3 +383,7 @@ subto kantenkapa:
 #do print "sum_abs_B = ",sum_abs_B;
 #do forall <n> in N do print "old_lb = ", zl[n], ", new_lb = ", scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n];
 #do print "new_sum_abs_zl = ", sum <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * abs(zl[n]);
+
+## Interessant für Testfall 92
+#subto test:
+#u["GSC"] == 2 * u["GUD"];
