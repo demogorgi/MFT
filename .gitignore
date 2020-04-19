@@ -9,3 +9,4 @@ bck/
 *.rb
 *.scip
 *_12*.zpl
+*.py
