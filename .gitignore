@@ -1,5 +1,6 @@
 *~
-*.sol*
+*.sol
+*.dot
 *.tbl*
 *.lp*
 *.log*
