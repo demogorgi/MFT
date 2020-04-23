@@ -59,10 +59,11 @@ param aB[<i> in N] := if pu[i] == pl[i] then 0 else 1 / ( 0.5 * ( pu[i] - pl[i] 
 defnumb uzb(unt_kuz_max,cmD,bound) := if abs(bound) < 0.001 then 0 else abs(bound) / unt_kuz_max * cmD / abs(bound) ** 2 end;
 param dD[<i> in N] := 0;
 param eD[<i> in N] := 0;
-param aDul[<i> in N] := uzb(ulmax,1000,ul[i]);
-param aDuu[<i> in N] := uzb(uumax,1000,uu[i]);
-param aDzl[<i> in N] := uzb(zlmax,1000,zl[i]);
-param aDzu[<i> in N] := uzb(zumax,1000,zu[i]);
+param cmd := 10000;
+param aDul[<i> in N] := uzb(ulmax,cmd,ul[i]);
+param aDuu[<i> in N] := uzb(uumax,cmd,uu[i]);
+param aDzl[<i> in N] := uzb(zlmax,cmd,zl[i]);
+param aDzu[<i> in N] := uzb(zumax,cmd,zu[i]);
 
 # Modellierung Kantenkosten
 # Anzahl der Linearitätsbereiche
@@ -374,7 +375,7 @@ subto kuerzungsbetragssumme:
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flussbilanz:
       # Zufluss - Abfluss + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
-      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ[n] == - B[n];
+      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto kantenkapa:
@@ -387,6 +388,6 @@ subto kantenkapa:
 #do print "new_sum_abs_zl = ", sum <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * abs(zl[n]);
 
 #subto test1:
-#u["GSC"] == -3.33333;
+#u["A"] == -11;
 #subto test2:
-#u["ONT"] == -5;
+#u["B"] == -19;
