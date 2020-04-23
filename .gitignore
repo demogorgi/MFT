@@ -1,11 +1,15 @@
 *~
-*.sol*
+*.sol
+*.dot
 *.tbl*
 *.lp*
 *.log*
 archiv/
 bck/
 *.swp
-*.rb
 *.scip
+*.rb
+!doIt.rb
+!tests.rb
 *_12*.zpl
+*.py

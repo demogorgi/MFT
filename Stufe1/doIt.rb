@@ -123,77 +123,13 @@ puts `scip < #{s1}`
 file_prepend(data1 + ".zpl", data2 + ".zpl", get_sum_abs(data1))
 
 # generate lp-file for step 1.2
-zimplit(data2, model2)
+graphviz_ruby = zimplit(data2, model2)
 # generate control file for step 1.2 for scip
 s2 = scipfile(data2)
 # execute scip with control file for step 1.2
 puts `scip < #{s2}`
-#
-# das muss schöner gemacht werden ###################
-puts "us:"
-uuu, uU = zuz(data2,"u")
-puts uuu
-puts "==================================="
-puts uU
-puts "==================================="
-puts "zs:"
-zzz, zZ = zuz(data2,"z")
-puts zzz
-puts "==================================="
-puts zZ
-puts "==================================="
-puts "tight:"
-pp ttt = tight_bounds(data2)
-puts "Knoten, die keine Kosten für Unterbrechungsratioabweichung bekommen:"
-pp kein_c_u = ttt.map{|e| e & uuu}.map{|x| x[0]}.flatten()
-puts "Knoten, die keine Kosten für Kürzungssratioabweichung bekommen:"
-pp kein_c_z = ttt.map{|e| e & zzz}.map{|x| x[0]}.flatten()
-puts "\nparam_u_1:"
-pp param_is_u = uuu - kein_c_u
-pp pu = param_is_u.map{|x| "\n<\"#{x}\"> 1"}
-puts param_u = "\nparam is_u[N] :=#{pu.join(',')} default 0;\n"
-### ACHTUNG der Fall [] muss noch besser behandelt werden.
-if !param_u.include?("<")
-    puts param_u = "\nparam is_u[N] :=#{pz.join(',')} <\"E\"> 0 default 0;"
-end
-puts "\nparam_z_1:"
-pp param_is_z = zzz - kein_c_z
-pp pz = param_is_z.map{|x| "\n<\"#{x}\"> 1"}
-### ACHTUNG der Fall [] muss noch besser behandelt werden.
-puts param_z = "\nparam is_z[N] :=#{pz.join(',')} default 0;"
-if !param_z.include?("<")
-    puts param_z = "\nparam is_z[N] :=#{pz.join(',')} <\"E\"> 0 default 0;"
-end
-file_postpend(data2 + ".zpl", data3 + ".zpl", param_u + param_z)
-
-cons = "\n\n#Fixierungen aus Schritt 1.2\n"
-i = 1
-puts uU.each{|x|
-    name = x.match(/\$(\S+)/)[1]
-    if !param_is_u.include?(name)
-	cons += "subto fixierung#{i}: " + x.sub("$","[\"").sub(/\s/,"\"] == ").sub(/\s+\(.*/,";")
-	i=i+1
-    end
-}
-puts zZ.each{|x|
-    name = x.match(/\$(\S+)/)[1]
-    if !param_is_z.include?(name)
-	cons += "subto fixierung#{i}: " + x.sub("$","[\"").sub(/\s/,"\"] == ").sub(/\s+\(.*/,";")
-	i=i+1
-    end
-}
-puts cons
-file_postpend(model3 + ".zpl", model3tmp + ".zpl", cons)
-# das muss schöner gemacht werden ###################
-
-# generate lp-file for step 1.3
-graphviz_ruby = zimplit(data3, model3tmp)
-# generate control file for step 1.3 for scip
-s3 = scipfile(data3)
-# execute scip with control file for step 1.3
-puts `scip < #{s3}`
 
 # write ruby code to file
-File.open(data3 + ".rb", "w") { |f| f.write(get_ruby_code(graphviz_ruby)) }
+File.open(data2 + ".rb", "w") { |f| f.write(get_ruby_code(graphviz_ruby)) }
 # execute ruby code to generate png file with graphviz (visualization of the problem and its solution)
-system("ruby #{data3}.rb #{data3}.sol")
+system("ruby #{data2}.rb #{data2}.sol")

@@ -1,23 +1,33 @@
+# Aus Schritt 1.1
+param sum_abs_unt := 0;
+param sum_abs_kuz := 0;
+
 # Knoten
 set N:= {
     <"A">,
-    <"B">
+    <"B">,
+    <"C">,
+    <"D">
 };
 
 # Kanten
 set E := {
-<"A","B">
+<"A","D">,
+<"C","D">,
+<"B","C">,
+<"B","D">
 };
 
 # Kapazitäten
 param capl[E] :=
-<"A","B"> 0;
+<"A","D"> 0 default 0;
 
 param capu[E] :=
-<"A","B"> 1000;
+<"A","D"> 1 default 1;
 
 param dist[E] :=
-<"A","B"> 100;
+<"A","D"> 100,
+<"B","D"> 100 default 50;
 
 # was kann aus dem Puffer entnommen werden?
 param pl[N] :=
@@ -25,7 +35,7 @@ param pl[N] :=
 
 # was kann in den Puffer gefüllt werden?
 param pu[N] :=
-<"A"> 10 default 10;
+<"A"> 0 default 0;
 
 # was kann unterbrochen werden
 param ul[N] :=
@@ -47,4 +57,6 @@ param zu[N] :=
 # Bedarfe (>0 Überdeckung, <0 Unterdeckung)
 param B[N] :=
 <"A"> 1,
-<"B"> -8;
+<"B"> 1,
+<"C"> 0,
+<"D"> -2;
