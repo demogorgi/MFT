@@ -7,7 +7,9 @@
 archiv/
 bck/
 *.swp
-*.rb
 *.scip
+*.rb
+!doIt.rb
+!tests.rb
 *_12*.zpl
 *.py
