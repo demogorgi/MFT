@@ -42,9 +42,9 @@ defnumb getKnot(k, lb, ub, numIntervals) := if k == 0 then lb else lb + k * ( ub
 defnumb getSlope(knotkminus1, knotk, a, d, e) := if knotk == knotkminus1 then 0 else ( h(knotk, a, d, e) - h(knotkminus1, a, d, e) ) / ( knotk - knotkminus1 ) end;
 
 # Intervallanzahlen für Linearisierungen
-param numIntervalsF := 2500;
+param numIntervalsF := 25000;
 param numIntervalsB := 2500;
-param numIntervalsD := 2500;
+param numIntervalsD := 15000;
 # Normale Kantenflüsse: Koeffizienten für Parabel zwischen capl und capu mit Scheitelpunkt (capl, 0) und Maximum cmF bei capu.
 param cmF := 1;
 param dF[<i, j> in E] := capl[i, j];
@@ -59,7 +59,7 @@ param aB[<i> in N] := if pu[i] == pl[i] then 0 else 1 / ( 0.5 * ( pu[i] - pl[i] 
 defnumb uzb(unt_kuz_max,cmD,bound) := if abs(bound) < 0.001 then 0 else abs(bound) / unt_kuz_max * cmD / abs(bound) ** 2 end;
 param dD[<i> in N] := 0;
 param eD[<i> in N] := 0;
-param cmd := 10000;
+param cmd := 100000;
 param aDul[<i> in N] := uzb(ulmax,cmd,ul[i]);
 param aDuu[<i> in N] := uzb(uumax,cmd,uu[i]);
 param aDzl[<i> in N] := uzb(zlmax,cmd,zl[i]);

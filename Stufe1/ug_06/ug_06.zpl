@@ -1,7 +1,3 @@
-# Aus Schritt 1.1
-param sum_abs_unt := 5;
-param sum_abs_kuz := 0;
-
 # Knoten
 set N:= {
     <"A">,

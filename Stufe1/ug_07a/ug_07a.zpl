@@ -3,27 +3,33 @@ set N:= {
     <"A">,
     <"B">,
     <"C">,
-    <"D">
+    <"D">,
+    <"E">
 };
 
 # Kanten
 set E := {
+<"A","B">,
+<"A","C">,
 <"A","D">,
-<"C","D">,
+<"A","E">,
 <"B","C">,
-<"B","D">
+<"C","D">,
+<"D","E">
 };
 
 # Kapazitäten
 param capl[E] :=
-<"A","D"> 0 default 0;
+<"A","B"> 0 default 0;
 
 param capu[E] :=
-<"A","D"> 1 default 1;
+<"A","B"> 100 default 100;
 
 param dist[E] :=
-<"A","D"> 100,
-<"B","D"> 100 default 50;
+<"A","B"> 0.5,
+<"A","C"> 1,
+<"A","D"> 1,
+<"A","E"> 1 default 0;
 
 # was kann aus dem Puffer entnommen werden?
 param pl[N] :=
@@ -52,7 +58,8 @@ param zu[N] :=
 ##################################################################################################
 # Bedarfe (>0 Überdeckung, <0 Unterdeckung)
 param B[N] :=
-<"A"> 1,
-<"B"> 1,
-<"C"> 0,
-<"D"> -2;
+<"A"> 40,
+<"B"> -10,
+<"C"> -10,
+<"D"> -10,
+<"E"> -10;
