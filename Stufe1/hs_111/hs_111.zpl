@@ -17,10 +17,6 @@ set N:= {
 # Kanten
 set E := { <i,j> in N cross N with i != j };
 
-# lineare Kantenkosten
-param aF[E] :=
-<"AH","BH"> 1 default 1;
-
 # Kapazitäten
 param capl[E] :=
 <"AH","BH"> 0 default 0;
