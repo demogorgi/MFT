@@ -32,107 +32,134 @@ param zumax := max <n> in N : abs(zu[n]);
 # Mittelpunkt des Intervalls [a, b]
 defnumb m(a, b) := a + ( b - a ) / 2;
 
-# Polynom 2. Grades (Scheitelpunktform) wird für Kostenfunktionen verwendet. Scheitelpunkt ist S(d|e).
-defnumb h(x, a, d, e) := a * ( x - d ) ** 2 + e;
-
-# Berechnung Position des k-ten Linearisierungsknotens
-defnumb getKnot(k, lb, ub, numIntervals) := if k == 0 then lb else lb + k * ( ub - lb ) / numIntervals end;
-
-# Berechnung der Steigung des k-ten Linearitätsbereichs
-defnumb getSlope(knotkminus1, knotk, a, d, e) := if knotk == knotkminus1 then 0 else ( h(knotk, a, d, e) - h(knotkminus1, a, d, e) ) / ( knotk - knotkminus1 ) end;
-
-# Intervallanzahlen für Linearisierungen
-param numIntervalsF := 25000;
-param numIntervalsB := 2500;
-param numIntervalsD := 15000;
 # Normale Kantenflüsse: Koeffizienten für Parabel zwischen capl und capu mit Scheitelpunkt (capl, 0) und Maximum cmF bei capu.
 param cmF := 1;
-param dF[<i, j> in E] := capl[i, j];
-param eF[<i, j> in E] := 0;
 param aF[<i, j> in E] := if capu[i,j] == capl[i,j] then 0 else dist[i,j] / dmax * cmF / ( capu[i, j] - capl[i, j] ) ** 2 end;
 # Pufferbewirtschaftung: Koeffizienten für Parabel zwischen pl und pu mit Scheitelpunkt (pl+(pu-pl)/2, 0)).
 # 5% der Abweichung von der maximalen Abweichung in eine Richtung Kosten 1. 10% kosten 4.
-param dB[<i> in N] := m(pl[i], pu[i]);
-param eB[<i> in N] := 0;
 param aB[<i> in N] := if pu[i] == pl[i] then 0 else 1 / ( 0.5 * ( pu[i] - pl[i] ) / 2 ) ** 2 end;
 # Unterbrechungs-/Kürzungskosten
 defnumb uzb(unt_kuz_max,cmD,bound) := if abs(bound) < 0.001 then 0 else abs(bound) / unt_kuz_max * cmD / abs(bound) ** 2 end;
-param dD[<i> in N] := 0;
-param eD[<i> in N] := 0;
-param cmd := 100000;
+param cmd := 1000;
 param aDul[<i> in N] := uzb(ulmax,cmd,ul[i]);
 param aDuu[<i> in N] := uzb(uumax,cmd,uu[i]);
 param aDzl[<i> in N] := uzb(zlmax,cmd,zl[i]);
 param aDzu[<i> in N] := uzb(zumax,cmd,zu[i]);
 
-# Modellierung Kantenkosten
-# Anzahl der Linearitätsbereiche
-set knotIndicesF := { 0 .. numIntervalsF };
-# Äquidistante Zerlegung von capl[i, j] bis capu[i, j]
-param knotsF[<i, j, k> in E * knotIndicesF] := getKnot(k, capl[i, j], capu[i, j], numIntervalsF);
-param slopeF[<i, j, k> in E * { 1 .. numIntervalsF }] := getSlope(knotsF[i, j, k-1], knotsF[i, j, k], aF[i, j], dF[i, j], eF[i, j]);
-## Big-M für Modellierung paralleler Kanten. Hier wird der maximale Linearisierungswert von F[i,j] an der Stelle 0 berechnet.
-#param bigMF[<i,j> in E] := max <k> in { 1 .. numIntervalsF }: ( slopeF[i, j, k] * ( 0 - knotsF[i, j, k] ) + h(knotsF[i, j, k], aF[i, j], dF[i, j], eF[i, j]) );
-## Nur stdout
-#do forall <i,j> in E do print "big-M[", i, ",", j, "]:", bigMF[i,j];
-#do print "---------> knotsF:";
-#do forall <i, j, k> in E * knotIndicesF do print knotsF[i, j, k];
-#do print "---------> InfoF1: (knotsF[k-1], h(knotsF[k-1])), (knotsF[k], h(knotsF[k])), slopeF"; 
-#do forall <i, j, k> in E * { 1 .. numIntervalsF } do print "(", knotsF[i, j, k-1], ", ", h(knotsF[i, j, k-1], aF[i, j], dF[i, j], eF[i,j]), "), (", knotsF[i, j, k], ", ", h(knotsF[i, j, k], aF[i, j], dF[i, j], eF[i,j]), "), ", slopeF[i, j, k];  
-#do print "---------> Linearisierung:";
-#do forall <i, j, k> in E * { 1 .. numIntervalsF } do print slopeF[i, j, k], " * ( x - ", knotsF[i, j, k], " ) + ", h(knotsF[i, j, k], aF[i, j], dF[i, j], eF[i,j]);
-#do print "---------> InfoF:";
-#do forall <i, j> in E do print "cap: [", capl[i, j], ", ", capu[i, j], "], d/dmax: ", dist[i, j] / dmax;
-do print "(*-flow----> Originalfunktion:*)";
-do print "Plot[{";
-do forall <i, j> in E do print "(*", i, "->", j, "*)Piecewise[{{", aF[i,j], "* ( x - (", dF[i,j], ") )^2 + ", eF[i,j], ", ", capl[i,j], " <= x <= ", capu[i,j], "}, Nothing}],";
-do print "}, {x, 0, 100}]";
+### Variablen
+# Kantenflussvariablen
+var f[E] real >= 0;
+var cf[E] real >= 0;
+# Puffernutzung
+var p[N] real >= -infinity;
+var cp[N] real >= 0;
+#
+# Unterbrechungsmodell
+var u[N] real >= -infinity;
+var unt_pos[N] real >= 0;
+var unt_neg[N] real >= 0;
+var unt_abs[N] real >= 0;
+var crul[N] real >= 0;
+var cruu[N] real >= 0;
+var cru[N] real >= 0;
+# Kürzungsmodell
+var z[N] real >= -infinity;
+var kuz_pos[N] real >= 0;
+var kuz_neg[N] real >= 0;
+var kuz_abs[N] real >= 0;
+var crzl[N] real >= 0;
+var crzu[N] real >= 0;
+var crz[N] real >= 0;
+# Wenn alle Stricke reißen...
+var ZZ[N] >= -infinity;
+#...häng ich mich auf. Diese Variablen sollten in allen Testfällen 0 sein.
+var ZZ_neg[N] real >= 0;
+var ZZ_pos[N] real >= 0;
+var ZZ_abs[N] real >= 0;
 
-# Modellierung Pufferkosten
-# Anzahl der Linearitätsbereiche
-set knotIndicesB := { 0 .. numIntervalsB };
-# Äquidistante Zerlegung von pl[i] bis pu[i]
-param knotsB[<i, k> in N * knotIndicesB] := getKnot(k, pl[i], pu[i], numIntervalsB);
-param slopeB[<i, k> in N * { 1 .. numIntervalsB }] := getSlope(knotsB[i, k-1], knotsB[i, k], aB[i], dB[i], eB[i]);
-## Big-M für Modellierung keine Kosten bei optimaler Puffernutzung
-#param bigMB[<i> in N] := h(pl[i], aB[i], dB[i], eB[i]);
-## Nur stdout
-#do forall <i> in N do print "bigMB: ", bigMB[i];
-#do print "---------> knotsB:";
-#do forall <i, k> in N * knotIndicesB do print knotsB[i, k];
-#do print "---------> InfoB: (knotsB[k-1], h(knotsB[k-1])), (knotsB[k], h(knotsB[k])), slopeB"; 
-#do forall <i, k> in N * { 1 .. numIntervalsB } do print "(", knotsB[i, k-1], ", ", h(knotsB[i, k-1], aB[i], dB[i], eB[i]), "), (", knotsB[i, k], ", ", h(knotsB[i, k], aB[i], dB[i], eB[i]), "), ", slopeB[i, k];  
-#do print "---------> Linearisierung:";
-#do forall <i, k> in N * { 1 .. numIntervalsB } do print slopeB[i, k], " * ( x - ", knotsB[i, k], " ) + ", h(knotsB[i, k], aB[i], dB[i], eB[i]);
-do print "(*-buf-----> Originalfunktion:*)";
-do print "Plot[{";
-do forall <i> in N do print "(*", i, "*)Piecewise[{{", aB[i], "* ( x - (", dB[i], ") )^2 + ", eB[i], ", ", pl[i], " <= x <= ", pu[i], "}, Nothing}],";
-do print "}, {x, 0, 100}]";
+# Paltzhaltervariablen -> werden im LP-File quadriert und QQ wird entfernt
+var fQQ[E];
+var pQQ[N];
+var unt_posQQ[N];
+var unt_negQQ[N];
+var kuz_posQQ[N];
+var kuz_negQQ[N];
 
-# Modellierung Kosten Unterbrechung und Kürzung
-# Anzahl der Linearitätsbereiche
-set knotIndicesD := { 0 .. numIntervalsD };
-# Äquidistante Zerlegung von 0 bis abs(bound)
-param knotsDul[<i, k> in N * knotIndicesD] := getKnot(k, 0, abs(ul[i]), numIntervalsD);
-param knotsDuu[<i, k> in N * knotIndicesD] := getKnot(k, 0, uu[i], numIntervalsD);
-param knotsDzl[<i, k> in N * knotIndicesD] := getKnot(k, 0, scale_z_bounds(sum_abs_zl,sum_abs_B) * abs(zl[i]), numIntervalsD);
-param knotsDzu[<i, k> in N * knotIndicesD] := getKnot(k, 0, scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[i], numIntervalsD);
-# Steigungen der Linearitätsbereiche
-param slopeDul[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDul[i, k-1], knotsDul[i, k], aDul[i], dD[i], eD[i]);
-param slopeDuu[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDuu[i, k-1], knotsDuu[i, k], aDuu[i], dD[i], eD[i]);
-param slopeDzl[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDzl[i, k-1], knotsDzl[i, k], aDzl[i], dD[i], eD[i]);
-param slopeDzu[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDzu[i, k-1], knotsDzu[i, k], aDzu[i], dD[i], eD[i]);
-# Nur stdout
-do print "---------> knotsDul:";
-do forall <i, k> in N * knotIndicesD do print knotsDul[i, k];
-do print "---------> InfoDul: (knotsDul[k-1], h(knotsDul[k-1])), (knotsDul[k], h(knotsDul[k])), slopeDul"; 
-do forall <i, k> in N * { 1 .. numIntervalsD } do print "(", knotsDul[i, k-1], ", ", h(knotsDul[i, k-1], aDul[i], dD[i], eD[i]), "), (", knotsDul[i, k], ", ", h(knotsDul[i, k], aDul[i], dD[i], eD[i]), "), ", slopeDul[i, k];  
-do print "---------> Linearisierung:";
-do forall <i, k> in N * { 1 .. numIntervalsD } do print slopeDul[i, k], " * ( x - ", knotsDul[i, k], " ) + ", h(knotsDul[i, k], aDul[i], dD[i], eD[i]);
-do print "(*-dev-----> Originalfunktion:*)";
-do print "Plot[";
-do forall <i> in N do print "Piecewise[{{", aDul[i], "* ( x - (", dD[i], ") )^2 + ", eD[i], ", ", 0, " <= x <= ", abs(ul[i]), "}, Nothing}],";
-do print " {x,0,100}]";
+### Zielfunktion
+# Minimiere Kosten
+minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n] + sum <n> in N: 1000000 * ZZ_abs[n];
+
+### Nebenbedingungen
+# Quadratische Kosten für Fluss
+subto quadraticCostsFlow:
+      forall <i, j> in E: cf[i, j] >= aF[i,j] * ( fQQ[i, j] - 2 * f[i,j] * capl[i,j] );
+# Quadratische Kosten für Puffer
+subto quadraticCostsBuffer:
+      forall <i> in N: cp[i] >= aB[i] * ( pQQ[i] - 2 * p[i] * m(pl[i],pu[i]) );
+# Quadratische Kosten Ratioabweichung Unterbrechung
+subto quadraticCostsURatioLb:
+      forall <i> in N: crul[i] >= aDul[i] * unt_negQQ[i];
+subto quadraticCostsURatioUb:
+      forall <i> in N: cruu[i] >= aDuu[i] * unt_posQQ[i];
+subto CostsURatioUbLb:
+      forall <i> in N: cru[i] == crul[i] + cruu[i];
+# Quadratische Kosten Ratioabweichung Kuerzung
+subto quadraticCostsZRatioLb:
+      forall <i> in N: crzl[i] >= aDzl[i] * kuz_negQQ[i];
+subto quadraticCostsZRatioUb:
+      forall <i> in N: crzu[i] >= aDzu[i] * kuz_posQQ[i];
+subto CostsZRatioUbLb:
+      forall <i> in N: crz[i] == crzl[i] + crzu[i];
+
+# Unterbrechungen
+# u < 0 -> Entryunterbrechung
+# u > 0 -> Exitunterbrechung
+# Betrag der Unterbrechung
+subto uabs1:
+      forall <n> in N: u[n] == unt_pos[n] - unt_neg[n];
+subto uabs2:
+      forall <n> in N: unt_abs[n] == unt_pos[n] + unt_neg[n];
+
+# Kürzungen
+# k < 0 -> Entrykürzung
+# k > 0 -> Exitkürzung
+# Betrag der Kürzungen
+subto kabs1:
+      forall <n> in N: z[n] == kuz_pos[n] - kuz_neg[n];
+subto kabs2:
+      forall <n> in N: kuz_abs[n] == kuz_pos[n] + kuz_neg[n];
+
+# Notfallvariable, um das Modell in jedem Fall zulässig zu machen
+subto slack1:
+      forall <n> in N: ZZ[n] == ZZ_pos[n] - ZZ_neg[n];
+subto slack2:
+      forall <n> in N: ZZ_abs[n] == ZZ_pos[n] + ZZ_neg[n];
+
+# Netzpuffernutzung
+# p < 0 -> Befüllung des Puffers
+# p > 0 -> Entnahme aus dem Puffer
+subto puffergrenzen:
+      forall <n> in N: pl[n] <= p[n] <= pu[n];
+
+subto unterbrechungsgrenzen:
+      forall <n> in N: ul[n] <= u[n] <= uu[n];
+subto unterbrechungsbetragssumme:
+      sum_abs_unt == sum <n> in N: unt_abs[n];
+
+subto kuerzungsgrenzen:
+      forall <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n] <= z[n] <= scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[n];
+subto kuerzungsbetragssumme:
+      sum_abs_kuz == sum <n> in N: kuz_abs[n];
+
+# Am Ende müssen alle Knoten ausgeglichen sein
+subto flussbilanz:
+      # Zufluss - Abfluss + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
+      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
+      #forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] == - B[n];
+
+# Kapazitätsgrenzen müssen eingehalten werden
+subto kantenkapa:
+      forall <i, j> in E: capl[i, j] <= f[i, j] <= capu[i, j];
 
 #########################################################################
 ## Ausgabe
@@ -274,120 +301,3 @@ do print '-RUBY-File.write(ARGV[0] + ".dot", dotFile)';
 do print '-RUBY-system("dot -Tpng -Gdpi=500 #{ARGV[0]}.dot > #{ARGV[0]}.png")';
 ###########################################################
 
-### Variablen
-# Kantenflussvariablen
-var f[E] real >= 0;
-var cf[E] real >= 0;
-# Puffernutzung
-var p[N] real >= -infinity;
-var cp[N] real >= 0;
-#
-# Unterbrechungsmodell
-var u[N] real >= -infinity;
-var unt_pos[N] real >= 0;
-var unt_neg[N] real >= 0;
-var unt_abs[N] real >= 0;
-var crul[N] real >= 0;
-var cruu[N] real >= 0;
-var cru[N] real >= 0;
-# Kürzungsmodell
-var z[N] real >= -infinity;
-var kuz_pos[N] real >= 0;
-var kuz_neg[N] real >= 0;
-var kuz_abs[N] real >= 0;
-var crzl[N] real >= 0;
-var crzu[N] real >= 0;
-var crz[N] real >= 0;
-# Wenn alle Stricke reißen...
-var ZZ[N] >= -infinity;
-#...häng ich mich auf. Diese Variablen sollten in allen Testfällen 0 sein.
-var ZZ_neg[N] real >= 0;
-var ZZ_pos[N] real >= 0;
-var ZZ_abs[N] real >= 0;
-
-### Zielfunktion
-# Minimiere Kosten
-minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n] + sum <n> in N: 100000 * ZZ_abs[n];
-
-### Nebenbedingungen
-# Konvexe Kosten für Fluss
-subto convexCostsFlow:
-      forall <i, j, k> in E * { 1 .. numIntervalsF }: cf[i, j] >= slopeF[i, j, k] * ( f[i, j] - knotsF[i, j, k] ) + h(knotsF[i, j, k], aF[i, j], dF[i, j], eF[i,j]);
-# Konvexe Kosten für Puffer
-subto convexCostsBuffer:
-      forall <i, k> in N * { 1 .. numIntervalsB }: cp[i] >= slopeB[i, k] * ( p[i] - knotsB[i, k] ) + h(knotsB[i, k], aB[i], dB[i], eB[i]);
-# Konvexe Kosten Ratioabweichung Unterbrechung
-subto convexCostsURatioLb:
-      forall <i, k> in N * { 1 .. numIntervalsD }: crul[i] >= ( slopeDul[i, k] * ( unt_neg[i] - knotsDul[i, k] ) + h(knotsDul[i, k], aDul[i], dD[i], eD[i]) );
-subto convexCostsURatioUb:
-      forall <i, k> in N * { 1 .. numIntervalsD }: cruu[i] >= ( slopeDuu[i, k] * ( unt_pos[i] - knotsDuu[i, k] ) + h(knotsDuu[i, k], aDuu[i], dD[i], eD[i]) );
-subto convexCostsURatioUbLb:
-      forall <i> in N: cru[i] == crul[i] + cruu[i];
-# Konvexe Kosten Ratioabweichung Kuerzung
-subto convexCostsZRatioLb:
-      forall <i, k> in N * { 1 .. numIntervalsD }: crzl[i] >= ( slopeDzl[i, k] * ( kuz_neg[i] - knotsDzl[i, k] ) + h(knotsDzl[i, k], aDzl[i], dD[i], eD[i]) );
-subto convexCostsZRatioUb:
-      forall <i, k> in N * { 1 .. numIntervalsD }: crzu[i] >= ( slopeDzu[i, k] * ( kuz_pos[i] - knotsDzu[i, k] ) + h(knotsDzu[i, k], aDzu[i], dD[i], eD[i]) );
-subto convexCostsZRatioUbLb:
-      forall <i> in N: crz[i] == crzl[i] + crzu[i];
-
-
-# Unterbrechungen
-# u < 0 -> Entryunterbrechung
-# u > 0 -> Exitunterbrechung
-# Betrag der Unterbrechung
-subto uabs1:
-      forall <n> in N: u[n] == unt_pos[n] - unt_neg[n];
-subto uabs2:
-      forall <n> in N: unt_abs[n] == unt_pos[n] + unt_neg[n];
-
-# Kürzungen
-# k < 0 -> Entrykürzung
-# k > 0 -> Exitkürzung
-# Betrag der Kürzungen
-subto kabs1:
-      forall <n> in N: z[n] == kuz_pos[n] - kuz_neg[n];
-subto kabs2:
-      forall <n> in N: kuz_abs[n] == kuz_pos[n] + kuz_neg[n];
-
-# Notfallvariable, um das Modell in jedem Fall zulässig zu machen
-subto slack1:
-      forall <n> in N: ZZ[n] == ZZ_pos[n] - ZZ_neg[n];
-subto slack2:
-      forall <n> in N: ZZ_abs[n] == ZZ_pos[n] + ZZ_neg[n];
-
-# Netzpuffernutzung
-# p < 0 -> Befüllung des Puffers
-# p > 0 -> Entnahme aus dem Puffer
-subto puffergrenzen:
-      forall <n> in N: pl[n] <= p[n] <= pu[n];
-
-subto unterbrechungsgrenzen:
-      forall <n> in N: ul[n] <= u[n] <= uu[n];
-subto unterbrechungsbetragssumme:
-      sum_abs_unt == sum <n> in N: unt_abs[n];
-
-subto kuerzungsgrenzen:
-      forall <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n] <= z[n] <= scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[n];
-subto kuerzungsbetragssumme:
-      sum_abs_kuz == sum <n> in N: kuz_abs[n];
-
-# Am Ende müssen alle Knoten ausgeglichen sein
-subto flussbilanz:
-      # Zufluss - Abfluss + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
-      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
-
-# Kapazitätsgrenzen müssen eingehalten werden
-subto kantenkapa:
-      forall <i, j> in E: capl[i, j] <= f[i, j] <= capu[i, j];
-
-#do print "INFO:";
-#do print "sum_abs_zl = ",sum_abs_zl;
-#do print "sum_abs_B = ",sum_abs_B;
-#do forall <n> in N do print "old_lb = ", zl[n], ", new_lb = ", scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n];
-#do print "new_sum_abs_zl = ", sum <n> in N: scale_z_bounds(sum_abs_zl,sum_abs_B) * abs(zl[n]);
-
-#subto test1:
-#u["A"] == -11;
-#subto test2:
-#u["B"] == -19;
