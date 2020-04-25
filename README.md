@@ -3,7 +3,7 @@
 ### Aufruf
 #### Berechnung eines Szenarios
 ruby doIt.rb verzeichnis_daten_erste_stufe/dateiname_daten_erste_stufe_ohne_dateinamenerweiterung
-#### Berechnung aller Szenarien und Kopieren des Ergebnis pngs nach Stufe1/Tests
+#### Berechnung aller Szenarien und Kopieren aller Ergebnis-pngs nach Stufe1/Tests
 ruby tests.rb
 
 #### Beispiel
@@ -11,6 +11,7 @@ ruby tests.rb
 ruby doIt.rb hs_111/hs_111
 ##### Berechnung aller Szenarien
 ruby tests.rb
+
 Achtung: damit tests.rb für jedes Szenario funktioniert muss die Zimpl-Datei den gleichen Namen haben wie ihr übergeordnetes Verziechnis, also z.B. Stufe1/hs_111/hs_111.zpl
 
 ### Voraussetzungen:
