@@ -47,23 +47,6 @@ def get_ruby_code(str)
     str.scan(/RUBY.*$/).map{ |l| l.sub("RUBY-","") }.join("\n")
 end
 
-def quadratify(model)
-    quadratic_model = ""
-    File.open(model + ".lp").each do |line|
-	if line.include?("QQ")
-	    if line =~ /<=.*<=/
-		next
-	    else
-		#quadratic_model += line.sub("QQ","").sub(/([\+\-\. e0-9]* [fuk][^ ]+ )/,'[ \1^2 ] / 2 ')
-		quadratic_model += line.sub("QQ","").sub(/([\+\-\. e0-9]* [fuk][^ ]+ )/,' [ \1^2 ] ')
-	    end
-	else
-	    quadratic_model += line
-	end
-    end
-    File.write(model + "_quad.lp", quadratic_model)
-end
-
 # directory with test case
 wdir = File.dirname(ARGV[0])
 # data for step 1.1
@@ -91,14 +74,12 @@ file_prepend(data1 + ".zpl", data2 + ".zpl", get_sum_abs(data1))
 
 # generate lp-file for step 1.2
 graphviz_ruby = zimplit(data2, model2)
-# introduce quadratic constraints in lp-file for step 1.2
-quadratify(data2)
 # generate control file for step 1.2 for scip
-s2 = scipfile(data2 + "_quad")
+s2 = scipfile(data2)
 # execute scip with control file for step 1.2
 puts `scip < #{s2}`
 
 # write ruby code to file
 File.open(data2 + ".rb", "w") { |f| f.write(get_ruby_code(graphviz_ruby)) }
 # execute ruby code to generate png file with graphviz (visualization of the problem and its solution)
-system("ruby #{data2}.rb #{data2}_quad.sol")
+system("ruby #{data2}.rb #{data2}.sol")

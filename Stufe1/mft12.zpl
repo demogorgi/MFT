@@ -77,14 +77,6 @@ var ZZ_neg[N] real >= 0;
 var ZZ_pos[N] real >= 0;
 var ZZ_abs[N] real >= 0;
 
-# Paltzhaltervariablen -> werden im LP-File quadriert und QQ wird entfernt
-var fQQ[E];
-var pQQ[N];
-var unt_posQQ[N];
-var unt_negQQ[N];
-var kuz_posQQ[N];
-var kuz_negQQ[N];
-
 ### Zielfunktion
 # Minimiere Kosten
 minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n] + sum <n> in N: 1000000 * ZZ_abs[n];
@@ -92,22 +84,22 @@ minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[
 ### Nebenbedingungen
 # Quadratische Kosten für Fluss
 subto quadraticCostsFlow:
-      forall <i, j> in E: cf[i, j] >= aF[i,j] * ( fQQ[i, j] - 2 * f[i,j] * capl[i,j] );
+      forall <i, j> in E: cf[i, j] >= aF[i,j] * ( f[i, j]^2 - 2 * f[i,j] * capl[i,j] );
 # Quadratische Kosten für Puffer
 subto quadraticCostsBuffer:
-      forall <i> in N: cp[i] >= aB[i] * ( pQQ[i] - 2 * p[i] * m(pl[i],pu[i]) );
+      forall <i> in N: cp[i] >= aB[i] * ( p[i]^2 - 2 * p[i] * m(pl[i],pu[i]) );
 # Quadratische Kosten Ratioabweichung Unterbrechung
 subto quadraticCostsURatioLb:
-      forall <i> in N: crul[i] >= aDul[i] * unt_negQQ[i];
+      forall <i> in N: crul[i] >= aDul[i] * unt_neg[i]^2;
 subto quadraticCostsURatioUb:
-      forall <i> in N: cruu[i] >= aDuu[i] * unt_posQQ[i];
+      forall <i> in N: cruu[i] >= aDuu[i] * unt_pos[i]^2;
 subto CostsURatioUbLb:
       forall <i> in N: cru[i] == crul[i] + cruu[i];
 # Quadratische Kosten Ratioabweichung Kuerzung
 subto quadraticCostsZRatioLb:
-      forall <i> in N: crzl[i] >= aDzl[i] * kuz_negQQ[i];
+      forall <i> in N: crzl[i] >= aDzl[i] * kuz_neg[i]^2;
 subto quadraticCostsZRatioUb:
-      forall <i> in N: crzu[i] >= aDzu[i] * kuz_posQQ[i];
+      forall <i> in N: crzu[i] >= aDzu[i] * kuz_pos[i]^2;
 subto CostsZRatioUbLb:
       forall <i> in N: crz[i] == crzl[i] + crzu[i];
 
