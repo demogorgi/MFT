@@ -17,8 +17,7 @@ set N:= {
 # Kanten
 set E := { <i,j> in N cross N with i != j };
 
-
-# Kostenkoeffiietn für Kantenflüsse: Kosten[i,j] = aF[i,j] * Fluss[i,j]
+# Kostenkoeffizienten für Kantenflüsse: Kosten[i,j] = aF[i,j] * Fluss[i,j]
 param aF[E]:=
 <"AH","BH"> 1 default 1;
 
