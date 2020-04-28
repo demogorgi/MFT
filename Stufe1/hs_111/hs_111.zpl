@@ -21,6 +21,10 @@ set E := { <i,j> in N cross N with i != j };
 param aF[E]:=
 <"AH","BH"> 1 default 1;
 
+# Kostenkoeffizienten für Puffer: Kosten[i] = aB[i] * p[i]
+param aB[N]:=
+<"GSC"> 1 default 1;
+
 # Kapazitäten
 param capl[E] :=
 <"AH","BH"> 0 default 0;
