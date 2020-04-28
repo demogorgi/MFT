@@ -11,5 +11,5 @@ bck/
 *.rb
 !doIt.rb
 !tests.rb
-*_12*.zpl
+*_12.zpl
 *.py
