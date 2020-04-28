@@ -31,57 +31,12 @@ def get_sum_abs(model)
     "# Aus Schritt 1.1\n" + b.join("\n") + "\n\n"
 end
 
-#def tight_bounds(model,lb_or_ub)
-def tight_bounds(model)
-    tight_bounds = []
-    #is_bound_tight = File.open(model + ".sol").grep(/#{lb_or_ub}_info\$/)
-    is_bound_tight = File.open(model + ".sol").grep(/_info\$/)
-    if is_bound_tight != []
-	is_bound_tight.each{|x| 
-	    value = x.match(/\s(\S+)\s/)[1]
-            edge = x.match(/_info\$([^\s]+)/)[1].split("$")
-	    if value.to_f.abs < 0.001
-		tight_bounds << edge
-	    end
-	}
-    end
-    tight_bounds.uniq
-end
-
-# liefert die Liste der Knoten mit Unterbrechung oder Kürzung betragsmäßig größer 0.001
-def zuz(model,u_oder_z)
-    unt_kuz = []
-    unts_kuzs = File.open(model + ".sol").grep(/^#{u_oder_z}\$/)
-    if unts_kuzs != []
-	unts_kuzs.each{|x| 
-	    value = x.match(/\s(\S+)\s/)[1]
-            node = x.match(/^#{u_oder_z}\$([^\s]+)/)[1]
-	    if value.to_f.abs > 0.001
-	        unt_kuz << node
-	    end
-	}
-    end
-    [unt_kuz, unts_kuzs]
-end
-
 # prepends str to file and writes this new_file
 def file_prepend(file, new_file, str)
   new_contents = ""
   File.open(file, 'r') do |fd|
     contents = fd.read
     new_contents = str << contents
-  end
-  File.open(new_file, 'w') do |fd| 
-    fd.write(new_contents)
-  end
-end
-
-# postpends str to file and writes this new_file
-def file_postpend(file, new_file, str)
-  new_contents = ""
-  File.open(file, 'r') do |fd|
-    contents = fd.read
-    new_contents = contents << str
   end
   File.open(new_file, 'w') do |fd| 
     fd.write(new_contents)

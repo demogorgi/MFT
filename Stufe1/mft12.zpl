@@ -15,6 +15,7 @@ defnumb scale_z_bounds(sumAbsZb,sumAbsB) := if sumAbsZb == 0 then
 					       end
                                             end;
 
+do forall <n> in N do print scale_z_bounds(sum_abs_zl,sum_abs_B) * zl[n], " <= z[", n, "] <= ", scale_z_bounds(sum_abs_zu,sum_abs_B) * zu[n];
 ## Prüfung ob noch freie Kapazität da ist (dann wird das Ratio mit optimiert, sonst nicht)
 #defnumb wirklich(a,lb_a,ub_a) := if a == lb_a or a == ub_a then 0 else 1 end;
 
@@ -42,13 +43,7 @@ defnumb getKnot(k, lb, ub, numIntervals) := if k == 0 then lb else lb + k * ( ub
 defnumb getSlope(knotkminus1, knotk, a, d, e) := if knotk == knotkminus1 then 0 else ( h(knotk, a, d, e) - h(knotkminus1, a, d, e) ) / ( knotk - knotkminus1 ) end;
 
 # Intervallanzahlen für Linearisierungen
-param numIntervalsB := 2500;
 param numIntervalsD := 15000;
-# Pufferbewirtschaftung: Koeffizienten für Parabel zwischen pl und pu mit Scheitelpunkt (pl+(pu-pl)/2, 0)).
-# 5% der Abweichung von der maximalen Abweichung in eine Richtung Kosten 1. 10% kosten 4.
-param dB[<i> in N] := m(pl[i], pu[i]);
-param eB[<i> in N] := 0;
-param aB[<i> in N] := if pu[i] == pl[i] then 0 else 1 / ( 0.5 * ( pu[i] - pl[i] ) / 2 ) ** 2 end;
 # Unterbrechungs-/Kürzungskosten
 defnumb uzb(unt_kuz_max,cmD,bound) := if abs(bound) < 0.001 then 0 else abs(bound) / unt_kuz_max * cmD / abs(bound) ** 2 end;
 param dD[<i> in N] := 0;
@@ -58,27 +53,6 @@ param aDul[<i> in N] := uzb(ulmax,cmd,ul[i]);
 param aDuu[<i> in N] := uzb(uumax,cmd,uu[i]);
 param aDzl[<i> in N] := uzb(zlmax,cmd,zl[i]);
 param aDzu[<i> in N] := uzb(zumax,cmd,zu[i]);
-
-# Modellierung Pufferkosten
-# Anzahl der Linearitätsbereiche
-set knotIndicesB := { 0 .. numIntervalsB };
-# Äquidistante Zerlegung von pl[i] bis pu[i]
-param knotsB[<i, k> in N * knotIndicesB] := getKnot(k, pl[i], pu[i], numIntervalsB);
-param slopeB[<i, k> in N * { 1 .. numIntervalsB }] := getSlope(knotsB[i, k-1], knotsB[i, k], aB[i], dB[i], eB[i]);
-## Big-M für Modellierung keine Kosten bei optimaler Puffernutzung
-#param bigMB[<i> in N] := h(pl[i], aB[i], dB[i], eB[i]);
-## Nur stdout
-#do forall <i> in N do print "bigMB: ", bigMB[i];
-#do print "---------> knotsB:";
-#do forall <i, k> in N * knotIndicesB do print knotsB[i, k];
-#do print "---------> InfoB: (knotsB[k-1], h(knotsB[k-1])), (knotsB[k], h(knotsB[k])), slopeB"; 
-#do forall <i, k> in N * { 1 .. numIntervalsB } do print "(", knotsB[i, k-1], ", ", h(knotsB[i, k-1], aB[i], dB[i], eB[i]), "), (", knotsB[i, k], ", ", h(knotsB[i, k], aB[i], dB[i], eB[i]), "), ", slopeB[i, k];  
-#do print "---------> Linearisierung:";
-#do forall <i, k> in N * { 1 .. numIntervalsB } do print slopeB[i, k], " * ( x - ", knotsB[i, k], " ) + ", h(knotsB[i, k], aB[i], dB[i], eB[i]);
-do print "(*-buf-----> Originalfunktion:*)";
-do print "Plot[{";
-do forall <i> in N do print "(*", i, "*)Piecewise[{{", aB[i], "* ( x - (", dB[i], ") )^2 + ", eB[i], ", ", pl[i], " <= x <= ", pu[i], "}, Nothing}],";
-do print "}, {x, 0, 100}]";
 
 # Modellierung Kosten Unterbrechung und Kürzung
 # Anzahl der Linearitätsbereiche
@@ -93,17 +67,17 @@ param slopeDul[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDul[i, k-1
 param slopeDuu[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDuu[i, k-1], knotsDuu[i, k], aDuu[i], dD[i], eD[i]);
 param slopeDzl[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDzl[i, k-1], knotsDzl[i, k], aDzl[i], dD[i], eD[i]);
 param slopeDzu[<i, k> in N * { 1 .. numIntervalsD }] := getSlope(knotsDzu[i, k-1], knotsDzu[i, k], aDzu[i], dD[i], eD[i]);
-# Nur stdout
-do print "---------> knotsDul:";
-do forall <i, k> in N * knotIndicesD do print knotsDul[i, k];
-do print "---------> InfoDul: (knotsDul[k-1], h(knotsDul[k-1])), (knotsDul[k], h(knotsDul[k])), slopeDul"; 
-do forall <i, k> in N * { 1 .. numIntervalsD } do print "(", knotsDul[i, k-1], ", ", h(knotsDul[i, k-1], aDul[i], dD[i], eD[i]), "), (", knotsDul[i, k], ", ", h(knotsDul[i, k], aDul[i], dD[i], eD[i]), "), ", slopeDul[i, k];  
-do print "---------> Linearisierung:";
-do forall <i, k> in N * { 1 .. numIntervalsD } do print slopeDul[i, k], " * ( x - ", knotsDul[i, k], " ) + ", h(knotsDul[i, k], aDul[i], dD[i], eD[i]);
-do print "(*-dev-----> Originalfunktion:*)";
-do print "Plot[";
-do forall <i> in N do print "Piecewise[{{", aDul[i], "* ( x - (", dD[i], ") )^2 + ", eD[i], ", ", 0, " <= x <= ", abs(ul[i]), "}, Nothing}],";
-do print " {x,0,100}]";
+## Nur stdout
+#do print "---------> knotsDul:";
+#do forall <i, k> in N * knotIndicesD do print knotsDul[i, k];
+#do print "---------> InfoDul: (knotsDul[k-1], h(knotsDul[k-1])), (knotsDul[k], h(knotsDul[k])), slopeDul"; 
+#do forall <i, k> in N * { 1 .. numIntervalsD } do print "(", knotsDul[i, k-1], ", ", h(knotsDul[i, k-1], aDul[i], dD[i], eD[i]), "), (", knotsDul[i, k], ", ", h(knotsDul[i, k], aDul[i], dD[i], eD[i]), "), ", slopeDul[i, k];  
+#do print "---------> Linearisierung:";
+#do forall <i, k> in N * { 1 .. numIntervalsD } do print slopeDul[i, k], " * ( x - ", knotsDul[i, k], " ) + ", h(knotsDul[i, k], aDul[i], dD[i], eD[i]);
+#do print "(*-dev-----> Originalfunktion:*)";
+#do print "Plot[";
+#do forall <i> in N do print "Piecewise[{{", aDul[i], "* ( x - (", dD[i], ") )^2 + ", eD[i], ", ", 0, " <= x <= ", abs(ul[i]), "}, Nothing}],";
+#do print " {x,0,100}]";
 
 ### Variablen
 # Kantenflussvariablen
@@ -111,6 +85,9 @@ var f[E] real >= 0;
 var cf[E] real >= 0;
 # Puffernutzung
 var p[N] real >= -infinity;
+var p_pos[N] real >= 0;
+var p_neg[N] real >= 0;
+var p_abs[N] real >= 0;
 var cp[N] real >= 0;
 #
 # Unterbrechungsmodell
@@ -142,11 +119,11 @@ minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[
 
 ### Nebenbedingungen
 # Konvexe Kosten für Fluss
-subto convexCostsFlow:
+subto linearCostsFlow:
       forall <i, j> in E: cf[i, j] == aF[i, j] * f[i, j];
 # Konvexe Kosten für Puffer
-subto convexCostsBuffer:
-      forall <i, k> in N * { 1 .. numIntervalsB }: cp[i] >= slopeB[i, k] * ( p[i] - knotsB[i, k] ) + h(knotsB[i, k], aB[i], dB[i], eB[i]);
+subto linearCostsBuffer:
+      forall <i> in N: cp[i] == aB[i] * p_abs[i];
 # Konvexe Kosten Ratioabweichung Unterbrechung
 subto convexCostsURatioLb:
       forall <i, k> in N * { 1 .. numIntervalsD }: crul[i] >= ( slopeDul[i, k] * ( unt_neg[i] - knotsDul[i, k] ) + h(knotsDul[i, k], aDul[i], dD[i], eD[i]) );
@@ -162,6 +139,12 @@ subto convexCostsZRatioUb:
 subto convexCostsZRatioUbLb:
       forall <i> in N: crz[i] == crzl[i] + crzu[i];
 
+
+# Puffernutzung
+subto pabs1:
+      forall <n> in N: p[n] == p_pos[n] - p_neg[n];
+subto pabs2:
+      forall <n> in N: p_abs[n] == p_pos[n] + p_neg[n];
 
 # Unterbrechungen
 # u < 0 -> Entryunterbrechung
@@ -342,13 +325,13 @@ do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'fbc490\" ];\n"';
 do forall <n> in N with B[n] <  0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [", pl[n], ", ", pu[n], "]: #{buffer['", n, "'].to_f.signif()} (#{cbuffer['", n, "'].to_f.signif()})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif()} (#{cinterrupt['", n, "'].to_f.signif()})\\nz in [", zl[n], ", ", zu[n], "]: #{curtail['", n, "'].to_f.signif()} (#{ccurtail['", n, "'].to_f.signif()})", '\"];\n"';
 #
 # Die nächste Zeile kann genutzt werden, wenn alle Kanten dargestellt werden sollen.
-do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
+#do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
 # Die nächste Zeile kann genutzt werden, wenn nur die Kanten mit Kosten durch Flüsse dargestellt werden sollen
-#do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif() > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n" end';
+do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif() > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n" end';
 do print '-RUBY-dotFile << "\noverlap = false\n"';
 do print '-RUBY-dotFile << "\nlabeljust=left"';
 do print '-RUBY-dotFile << "\n}"';
 do print '-RUBY-File.write(ARGV[0] + ".dot", dotFile)';
-do print '-RUBY-system("dot -Tpng -Gdpi=500 #{ARGV[0]}.dot > #{ARGV[0]}.png")';
+do print '-RUBY-system("dot -Tpng -Gdpi=150 #{ARGV[0]}.dot > #{ARGV[0]}.png")';
 ###########################################################
 
