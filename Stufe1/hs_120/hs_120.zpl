@@ -1,6 +1,7 @@
 ##### Modell: linMM
 
- ###### Szenario/ Variante: 120 TEST-120_H7
+ ###### Szenario/ Variante: hs_120
+ #                          marco Topologie ohne parallele Kante zwischen OGE und GSC 
 
 # Knoten
 set N:= {
@@ -23,54 +24,7 @@ set N:= {
 };
 
 # Kanten
-set E := {# <i,j> in N cross N with i != j };
-<"OGE_H","GSC">,
-<"GSC","TG_H">,
-<"GSC","NOW_L">,
-<"GSC","GTG_H">,
-<"GUD_H","GSC">,
-<"GSC","GUD_H">,
-<"GSC","ONT_H">,
-<"GSC","tnbw_H">,
-<"GSC","FGN">,
-<"ONT_H","FGN">,
-<"GSC","iNetz">,
-<"ONT_H","iNetz">,
-<"GSC","GNH">,
-<"GUD_H","GNH">,
-<"ONT_H","GSC">,
-<"tnbw_H","GSC">,
-<"GUD_H","GUD_L">,
-<"GUD_H","NOW_H">,
-<"GUD_H","OGE_H">,
-<"GUD_H","ONT_H">,
-<"GUD_H","TG_H">,
-<"OGE_H","bn">,
-<"OGE_H","GUD_H">,
-<"OGE_H","NOW_H">,
-<"OGE_H","OGE_L">,
-<"OGE_H","TG_H">,
-<"OGE_H","tnbw_H">,
-<"tnbw_H","bn">,
-<"tnbw_H","OGE_H">,
-<"GTG_L","GUD_L">,
-<"GTG_L","NOW_L">,
-<"GUD_L","NOW_L">,
-<"GUD_L","GTG_L">,
-<"GUD_L","GUD_H">,
-<"GUD_L","OGE_L">,
-<"NOW_H","GUD_H">,
-<"NOW_L","GTG_L">,
-<"NOW_L","GUD_L">,
-<"NOW_L","OGE_L">,
-<"OGE_L","OGE_H">,
-<"ONT_H","GUD_H">,
-<"TG_H","OGE_H">,
-<"TG_H","OGE_L">,
-<"bn","tnbw_H">,
-<"bn","OGE_H">,
-<"GSC","OGE_H">
-};
+set E := { <i,j> in N cross N with i != j };
 
 # Kapazitäten
 param capl[E] :=                
@@ -128,7 +82,7 @@ param capu[E] :=
 param dist[E] :=
 <"OGE_H","GSC"> 100 default 100;
   
-# was kann aus dem Puffer entnommen werden?
+# was kann aus dem Puffer entnommen werden? pl <= 0
 param pl[N] :=
 <"GSC"> 0.0,
 <"ONT_H"> 0.0,
@@ -160,7 +114,7 @@ param pu[N] :=
 <"NOW_H"> 0.0,
 <"GTG_H"> 0.0 default 0;
   
-# was kann unterbrochen werden
+# was kann unterbrochen werden ul <= 0
 param ul[N] :=
 <"bn"> 0.0,
 <"GSC"> 0.0,
@@ -192,7 +146,7 @@ param uu[N] :=
 <"TG_H"> 0.0,
 <"tnbw_H"> 0.0 default 0;
   
-# was kann gekuerzt werden  (hier: Vorgabe der TVK fuer Ratio -> zu skalieren)
+# was kann gekuerzt werden  (hier: Vorgabe der TVK fuer Ratio -> zu skalieren) zl <= 0
 param zl[N] :=
 <"GSC"> -120.154,
 <"GUD_H"> -23.985,
