@@ -25,10 +25,12 @@ param dmax := max <i, j> in E : dist[i, j];
 # Maximal auftretende Unterbrechungsgrenze (Betrag)
 param ulmax := max <n> in N : abs(ul[n]);
 param uumax := max <n> in N : abs(uu[n]);
+param umax := max(ulmax,uumax);
 
 # Maximal auftretende Kürzungsgrenze (Betrag)
 param zlmax := max <n> in N : abs(zl[n]);
 param zumax := max <n> in N : abs(zu[n]);
+param zmax := max(zlmax,zumax);
 
 # Mittelpunkt des Intervalls [a, b]
 defnumb m(a, b) := a + ( b - a ) / 2;
@@ -43,16 +45,16 @@ defnumb getKnot(k, lb, ub, numIntervals) := if k == 0 then lb else lb + k * ( ub
 defnumb getSlope(knotkminus1, knotk, a, d, e) := if knotk == knotkminus1 then 0 else ( h(knotk, a, d, e) - h(knotkminus1, a, d, e) ) / ( knotk - knotkminus1 ) end;
 
 # Intervallanzahlen für Linearisierungen
-param numIntervalsD := 15000;
+param numIntervalsD := 25000;
 # Unterbrechungs-/Kürzungskosten
 defnumb uzb(unt_kuz_max,cmD,bound) := if abs(bound) < 0.001 then 0 else abs(bound) / unt_kuz_max * cmD / abs(bound) ** 2 end;
 param dD[<i> in N] := 0;
 param eD[<i> in N] := 0;
 param cmd := 1000000;
-param aDul[<i> in N] := uzb(ulmax,cmd,ul[i]);
-param aDuu[<i> in N] := uzb(uumax,cmd,uu[i]);
-param aDzl[<i> in N] := uzb(zlmax,cmd,zl[i]);
-param aDzu[<i> in N] := uzb(zumax,cmd,zu[i]);
+param aDul[<i> in N] := uzb(umax,cmd,ul[i]);
+param aDuu[<i> in N] := uzb(umax,cmd,uu[i]);
+param aDzl[<i> in N] := uzb(zmax,cmd,zl[i]);
+param aDzu[<i> in N] := uzb(zmax,cmd,zu[i]);
 
 # Modellierung Kosten Unterbrechung und Kürzung
 # Anzahl der Linearitätsbereiche
@@ -189,7 +191,8 @@ subto kuerzungsbetragssumme:
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flussbilanz:
       # Zufluss - Abfluss + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
-      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
+      #forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
+      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] == - B[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto kantenkapa:
