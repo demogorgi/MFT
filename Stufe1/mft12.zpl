@@ -81,7 +81,7 @@ var ZZ_abs[N] real >= 0;
 
 ### Zielfunktion
 # Minimiere Kosten
-minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n];# + sum <n> in N: 1000000 * ZZ_abs[n];
+minimize obj: sum <i,j> in E: cf[i,j] + sum <n> in N: cp[n] + sum <n> in N: cru[n] + sum <n> in N: crz[n] + sum <n> in N: 1000000 * ZZ_abs[n];
 
 ### Nebenbedingungen
 # Quadratische Kosten für Fluss
@@ -148,8 +148,8 @@ subto kuerzungsbetragssumme:
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flussbilanz:
       # Zufluss - Abfluss + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
-      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
-      #forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] == - B[n];
+#      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + ZZ_abs[n] == - B[n];
+      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] == - B[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto kantenkapa:
