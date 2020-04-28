@@ -42,7 +42,7 @@ param aF[<i, j> in E] := if capu[i,j] == capl[i,j] then 0 else dist[i,j] / dmax 
 param aB[<i> in N] := if pu[i] == pl[i] then 0 else 1 / ( 0.5 * ( pu[i] - pl[i] ) / 2 ) ** 2 end;
 # Unterbrechungs-/Kürzungskosten
 defnumb uzb(unt_kuz_max,cmD,bound) := if abs(bound) < 0.001 then 0 else abs(bound) / unt_kuz_max * cmD / abs(bound) ** 2 end;
-param cmd := 1000000;
+param cmd := 100000;
 param aDul[<i> in N] := uzb(umax,cmd,ul[i]);
 param aDuu[<i> in N] := uzb(umax,cmd,uu[i]);
 param aDzl[<i> in N] := uzb(zmax,cmd,zl[i]);
@@ -285,9 +285,9 @@ do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'fbc490\" ];\n"';
 do forall <n> in N with B[n] <  0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [", pl[n], ", ", pu[n], "]: #{buffer['", n, "'].to_f.signif()} (#{cbuffer['", n, "'].to_f.signif()})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif()} (#{cinterrupt['", n, "'].to_f.signif()})\\nz in [", zl[n], ", ", zu[n], "]: #{curtail['", n, "'].to_f.signif()} (#{ccurtail['", n, "'].to_f.signif()})", '\"];\n"';
 #
 # Die nächste Zeile kann genutzt werden, wenn alle Kanten dargestellt werden sollen.
-do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
+#do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
 # Die nächste Zeile kann genutzt werden, wenn nur die Kanten mit Kosten durch Flüsse dargestellt werden sollen
-#do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif() > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n" end';
+do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif() > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n" end';
 do print '-RUBY-dotFile << "\noverlap = false\n"';
 do print '-RUBY-dotFile << "\nlabeljust=left"';
 do print '-RUBY-dotFile << "\n}"';
@@ -295,4 +295,3 @@ do print '-RUBY-File.write(ARGV[0] + ".dot", dotFile)';
 do print '-RUBY-system("dot -Tpng -Gdpi=150 #{ARGV[0]}.dot > #{ARGV[0]}.png")';
 ###########################################################
 
-#subto test: z["GSC"] == 0;

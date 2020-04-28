@@ -1,13 +1,14 @@
 ##### Modell: linMM
 
- ###### Szenario/ Variante: hs_120
- #                          marco Topologie ohne parallele Kante zwischen OGE und GSC 
+ ###### Szenario/ Variante: hs_122
+ #                          Mehrfachknoten bei OGE und GSC zur Abbildung paralleler Kanten integriert
 
 # Knoten
 set N:= {
 <"FGN">,
 <"GNH">,
 <"GSC">,
+<"GSC2">,
 <"GTG_H">,
 <"GTG_L">,
 <"GUD_H">,
@@ -15,6 +16,7 @@ set N:= {
 <"NOW_H">,
 <"NOW_L">,
 <"OGE_H">,
+<"OGE_H2">,
 <"OGE_L">,
 <"ONT_H">,
 <"TG_H">,
@@ -28,10 +30,9 @@ set E := { <i,j> in N cross N with i != j };
 
 # Kapazitäten
 param capl[E] :=                
-<"OGE_H","GSC"> 0.0 default 0;
+<"GSC","TG_H"> 0.0 default 0;
 
 param capu[E] :=
-<"OGE_H","GSC"> 10.125,
 <"GSC","TG_H"> 0.53,
 <"GSC","NOW_L"> 1.4,
 <"GSC","GTG_H"> 1.125,
@@ -76,43 +77,54 @@ param capu[E] :=
 <"TG_H","OGE_L"> 0.2,
 <"bn","tnbw_H"> 2.17,
 <"bn","OGE_H"> 10.635,
-<"GSC","OGE_H"> 14.625 default 0;
+<"GSC","OGE_H"> 14.625,
+<"OGE_H","GSC"> 10.125,
+<"GSC2","OGE_H2"> 3.6,
+<"OGE_H2","GSC2"> 1.125,
+<"GSC2","GSC"> 300.0,
+<"GSC","GSC2"> 300.0,
+<"OGE_H","OGE_H2"> 300.0,
+<"OGE_H2","OGE_H"> 300.0 default 0;
 
 
 param dist[E] :=
-<"OGE_H","GSC"> 100 default 100;
+<"GSC","TG_H"> 100 default 100;
   
 # was kann aus dem Puffer entnommen werden? pl <= 0
 param pl[N] :=
 <"GSC"> 0.0,
 <"ONT_H"> 0.0,
 <"GUD_H"> 0.0,
-<"NOW_L"> 0.0,
-<"GTG_L"> 0.0,
-<"GUD_L"> 0.0,
+<"NOW_L"> -1.0,
+<"GTG_L"> -1.0,
+<"GUD_L"> -1.0,
 <"OGE_H"> 0.0,
-<"OGE_L"> 0.0,
+<"OGE_L"> -1.0,
 <"TG_H"> 0.0,
 <"bn"> 0.0,
 <"tnbw_H"> 0.0,
 <"NOW_H"> 0.0,
-<"GTG_H"> 0.0 default 0;
+<"GTG_H"> 0.0,
+<"GSC2"> 0.0,
+<"OGE_H2"> 0.0 default 0;
   
 # was kann in den Puffer gefüllt werden?
 param pu[N] :=
-<"GSC"> 0.0,
-<"GUD_H"> 0.0,
-<"OGE_H"> 0.0,
-<"tnbw_H"> 0.0,
-<"GTG_L"> 0.0,
-<"GUD_L"> 0.0,
-<"NOW_L"> 0.0,
-<"OGE_L"> 0.0,
-<"ONT_H"> 0.0,
-<"TG_H"> 0.0,
-<"bn"> 0.0,
-<"NOW_H"> 0.0,
-<"GTG_H"> 0.0 default 0;
+<"GSC"> 1.0,
+<"GUD_H"> 1.0,
+<"OGE_H"> 1.0,
+<"tnbw_H"> 1.0,
+<"GTG_L"> 1.0,
+<"GUD_L"> 1.0,
+<"NOW_L"> 1.0,
+<"OGE_L"> 1.0,
+<"ONT_H"> 1.0,
+<"TG_H"> 1.0,
+<"bn"> 1.0,
+<"NOW_H"> 1.0,
+<"GTG_H"> 1.0,
+<"GSC2"> 0.0,
+<"OGE_H2"> 0.0 default 0;
   
 # was kann unterbrochen werden ul <= 0
 param ul[N] :=
@@ -128,7 +140,9 @@ param ul[N] :=
 <"OGE_L"> 0.0,
 <"ONT_H"> 0.0,
 <"TG_H"> 0.0,
-<"tnbw_H"> 0.0 default 0;
+<"tnbw_H"> 0.0,
+<"GSC2"> 0.0,
+<"OGE_H2"> 0.0 default 0;
   
 # was kann unterbrochen werden
 param uu[N] :=
@@ -144,7 +158,9 @@ param uu[N] :=
 <"OGE_L"> 0.0,
 <"ONT_H"> 0.0,
 <"TG_H"> 0.0,
-<"tnbw_H"> 0.0 default 0;
+<"tnbw_H"> 0.0,
+<"GSC2"> 0.0,
+<"OGE_H2"> 0.0 default 0;
   
 # was kann gekuerzt werden  (hier: Vorgabe der TVK fuer Ratio -> zu skalieren) zl <= 0
 param zl[N] :=
@@ -163,7 +179,9 @@ param zl[N] :=
 <"TG_H"> -2.9589999999999996,
 <"bn"> -35.594,
 <"NOW_H"> 0.0,
-<"GTG_H"> 0.0 default 0;
+<"GTG_H"> 0.0,
+<"GSC2"> 0.0,
+<"OGE_H2"> 0.0 default 0;
   
 # was kann gekuerzt werden (hier: Vorgabe der TVK fuer Ratio -> zu skalieren)
 param zu[N] :=
@@ -182,7 +200,9 @@ param zu[N] :=
 <"TG_H"> 30.269000000000002,
 <"tnbw_H"> 1.4269999999999998,
 <"NOW_H"> 0.0,
-<"GTG_H"> 0.0 default 0;
+<"GTG_H"> 0.0,
+<"GSC2"> 0.0,
+<"OGE_H2"> 0.0 default 0;
   
 ##################################################################################################
 # Bedarfe (>0 Überdeckung, <0 Unterdeckung)
@@ -190,6 +210,7 @@ param B[N] :=
 <"FGN"> 0.0,
 <"GNH"> 0.0,
 <"GSC"> 43.73,
+<"GSC2"> 0.0,
 <"GTG_H"> 0.0,
 <"GTG_L"> 0.0,
 <"GUD_H"> -7.6,
@@ -197,9 +218,10 @@ param B[N] :=
 <"NOW_H"> 0.0,
 <"NOW_L"> 0.0,
 <"OGE_H"> -4.35,
+<"OGE_H2"> 0.0,
 <"OGE_L"> 0.0,
 <"ONT_H"> -15.24,
 <"TG_H"> -5.3,
 <"bn"> -9.01,
 <"iNetz"> 0.0,
-<"tnbw_H"> -7.77 default 0;
+<"tnbw_H"> -7.8 default 0;
