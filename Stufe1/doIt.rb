@@ -8,8 +8,9 @@ require 'pp'
 
 # generates lp file for scip
 def zimplit(data, model)
-    #puts "zimpl -l 100 #{data}.zpl #{model}.zpl"
-    `zimpl -l 100 #{data}.zpl #{model}.zpl`
+    puts "zimpl -l 100 #{data}.zpl #{model}.zpl"
+    puts zpl = `zimpl -l 100 #{data}.zpl #{model}.zpl`
+    zpl
 end
 
 # generates control file for scip
@@ -24,56 +25,39 @@ end
 def get_sum_abs(model)
     sum_abs = nil
     File.open model + ".sol" do |file|
-      sum_abs = file.find_all { |line| line =~ /sum_abs/ }
+	sum_abs = file.find_all { |line| line =~ /sum_abs/ }
     end
     a = sum_abs.map { |x| x.match(/(^[^\s]+)\s+([0-9.+-e]+)/)[1,2] }
     b = a.map{ |y| "param " + y[0] + " := " + y[1] + ";" } 
     "# Aus Schritt 1.1\n" + b.join("\n") + "\n\n"
 end
 
-#def tight_bounds(model,lb_or_ub)
-def tight_bounds(model)
-    tight_bounds = []
-    #is_bound_tight = File.open(model + ".sol").grep(/#{lb_or_ub}_info\$/)
-    is_bound_tight = File.open(model + ".sol").grep(/_info\$/)
-    if is_bound_tight != []
-	is_bound_tight.each{|x| 
-	    value = x.match(/\s(\S+)\s/)[1]
-            edge = x.match(/_info\$([^\s]+)/)[1].split("$")
-	    if value.to_f.abs < 0.001
-		tight_bounds << edge
-	    end
-	}
+# gets relevant part of the solution from 1.2 for 1.3
+def get_puzZ(model)
+    puzZ = nil
+    File.open model + ".sol" do |file|
+	puzZ = file.find_all { |line| line =~ /^[puzZ]\$/ }
     end
-    tight_bounds.uniq
-end
-
-# liefert die Liste der Knoten mit Unterbrechung oder Kürzung betragsmäßig größer 0.001
-def zuz(model,u_oder_z)
-    unt_kuz = []
-    unts_kuzs = File.open(model + ".sol").grep(/^#{u_oder_z}\$/)
-    if unts_kuzs != []
-	unts_kuzs.each{|x| 
-	    value = x.match(/\s(\S+)\s/)[1]
-            node = x.match(/^#{u_oder_z}\$([^\s]+)/)[1]
-	    if value.to_f.abs > 0.001
-	        unt_kuz << node
-	    end
-	}
-    end
-    [unt_kuz, unts_kuzs]
+    a = puzZ.map { |x| x.match(/(^[^\s]+)\s+([0-9.+-e]+)/)[1,2] }.sort
+    b = a.group_by{|x| x[0][0]}
+    str = ""
+    b.each{|k,v|
+         str += "param fix_#{k}[N] :=\n"
+	 v.each{|x| str += "<\"#{x[0].sub(/.*\$/,"")}\"> #{x[1]},\n"}
+    }
+    "\n\n# Aus Schritt 1.2\n" + str.gsub(",\nparam",";\nparam").reverse.sub(",", ";").reverse
 end
 
 # prepends str to file and writes this new_file
 def file_prepend(file, new_file, str)
-  new_contents = ""
-  File.open(file, 'r') do |fd|
-    contents = fd.read
-    new_contents = str << contents
-  end
-  File.open(new_file, 'w') do |fd| 
-    fd.write(new_contents)
-  end
+    new_contents = ""
+    File.open(file, 'r') do |fd|
+	contents = fd.read
+	new_contents = str << contents
+    end
+    File.open(new_file, 'w') do |fd| 
+	fd.write(new_contents)
+    end
 end
 
 # postpends str to file and writes this new_file
@@ -96,7 +80,7 @@ end
 wdir = File.dirname(ARGV[0])
 # data for step 1.1
 data1 = File.basename(ARGV[0])
-# directory with mft11, mft12, mft13 and doIt.rb
+# directory with mft11, mft12 and doIt.rb
 modeldir = __dir__
 # Go into testcase directory
 Dir.chdir(wdir)
@@ -107,7 +91,6 @@ model1 = File.join(modeldir, "mft11")
 model2 = File.join(modeldir, "mft12")
 # model for step 1.3
 model3 = File.join(modeldir, "mft13")
-model3tmp = File.join(modeldir, "mft13tmp")
 # data for step 1.2
 data2 = data1 + "_12"
 # data for step 1.3
@@ -123,13 +106,22 @@ puts `scip < #{s1}`
 file_prepend(data1 + ".zpl", data2 + ".zpl", get_sum_abs(data1))
 
 # generate lp-file for step 1.2
-graphviz_ruby = zimplit(data2, model2)
+zimplit(data2, model2)
 # generate control file for step 1.2 for scip
 s2 = scipfile(data2)
 # execute scip with control file for step 1.2
 puts `scip < #{s2}`
+# prepend relevant part from step 1.2 to data for step 1.3
+file_postpend(data1 + ".zpl", data3 + ".zpl", get_puzZ(data2))
+
+# generate lp-file for step 1.3
+graphviz_ruby = zimplit(data3, model3)
+# generate control file for step 1.3 for scip
+s3 = scipfile(data3)
+# execute scip with control file for step 1.3
+puts `scip < #{s3}`
 
 # write ruby code to file
-File.open(data2 + ".rb", "w") { |f| f.write(get_ruby_code(graphviz_ruby)) }
+File.open(data3 + ".rb", "w") { |f| f.write(get_ruby_code(graphviz_ruby)) }
 # execute ruby code to generate png file with graphviz (visualization of the problem and its solution)
-system("ruby #{data2}.rb #{data2}.sol")
+system("ruby #{data3}.rb #{data3}.sol")
