@@ -9,7 +9,8 @@ require 'pp'
 # generates lp file for scip
 def zimplit(data, model)
     puts "zimpl -l 100 #{data}.zpl #{model}.zpl"
-    puts zpl = `zimpl -l 100 #{data}.zpl #{model}.zpl`
+    zpl = `zimpl -l 100 #{data}.zpl #{model}.zpl`
+    #puts zpl
     zpl
 end
 
@@ -45,7 +46,27 @@ def get_puzZ(model)
          str += "param fix_#{k}[N] :=\n"
 	 v.each{|x| str += "<\"#{x[0].sub(/.*\$/,"")}\"> #{x[1]},\n"}
     }
-    "\n\n# Aus Schritt 1.2\n" + str.gsub(",\nparam",";\nparam").reverse.sub(",", ";").reverse
+    r = "\n\n# Aus Schritt 1.2\n" + str.gsub(",\nparam",";\nparam").reverse.sub(",", ";").reverse
+    #puts r
+    r
+end
+
+# gets relevant part of the solution from 1.2 for 1.3
+def get_crpuzZ(model)
+    crpuzZ = nil
+    File.open model + ".sol" do |file|
+	crpuzZ = file.find_all { |line| line =~ /^cr[puzZ]\$/ }
+    end
+    a = crpuzZ.map { |x| x.match(/(^[^\s]+)\s+([0-9.+-e]+)/)[1,2] }.sort
+    b = a.group_by{|x| x[0][2]}
+    str = ""
+    b.each{|k,v|
+         str += "param fix_cr#{k}[N] :=\n"
+	 v.each{|x| str += "<\"#{x[0].sub(/.*\$/,"")}\"> #{x[1]},\n"}
+    }
+    r = "\n\n# Aus Schritt 1.2\n" + str.gsub(",\nparam",";\nparam").reverse.sub(",", ";").reverse
+    #puts r
+    r
 end
 
 # prepends str to file and writes this new_file
@@ -113,6 +134,7 @@ s2 = scipfile(data2)
 puts `scip < #{s2}`
 # prepend relevant part from step 1.2 to data for step 1.3
 file_postpend(data1 + ".zpl", data3 + ".zpl", get_puzZ(data2))
+file_postpend(data3 + ".zpl", data3 + ".zpl", get_crpuzZ(data2))
 
 # generate lp-file for step 1.3
 graphviz_ruby = zimplit(data3, model3)

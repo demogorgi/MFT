@@ -10,12 +10,16 @@ var f[E] real >= 0;
 var cf[E] real >= 0;
 # Puffernutzung
 var p[N] real >= -infinity;
+var crp[N] real >= 0;
 # Unterbrechungsmodell
 var u[N] real >= -infinity;
+var cru[N] real >= 0;
 # Kürzungsmodell
 var z[N] real >= -infinity;
+var crz[N] real >= 0;
 # Slackmodell
 var Z[N] >= -infinity;
+var crZ[N] real >= 0;
 
 ### Zielfunktion
 # Minimiere Kosten
@@ -42,6 +46,14 @@ subto fixz:
       forall <n> in N: z[n] == fix_z[n];
 subto fixZ:
       forall <n> in N: Z[n] == fix_Z[n];
+subto fixcrp:
+      forall <n> in N: crp[n] == fix_crp[n];
+subto fixcru:
+      forall <n> in N: cru[n] == fix_cru[n];
+subto fixcrz:
+      forall <n> in N: crz[n] == fix_crz[n];
+subto fixcrZ:
+      forall <n> in N: crZ[n] == fix_crZ[n];
 
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flussbilanz:
@@ -168,7 +180,7 @@ do print '-RUBY-puts(ccurtail)';
 #
 do print '-RUBY-SlackSolution = File.open(ARGV[0]).grep(/^Z\$/)';
 do print '-RUBY-if SlackSolution != []';
-do print '-RUBY-    puts(SlackSolution)';
+#do print '-RUBY-    puts(SlackSolution)';
 do print '-RUBY-    SlackSolution.each{|x| slack[x.match(/^Z\$([^\s]+)/)[1].sub("$", "->")] = x.match(/\s(\S+)\s/)[1]}';
 do print '-RUBY-end';
 do print '-RUBY-print("Slack: ")';
@@ -176,7 +188,7 @@ do print '-RUBY-puts(slack)';
 #
 do print '-RUBY-SlackCostSolution = File.open(ARGV[0]).grep(/^crZ\$/)';
 do print '-RUBY-if SlackCostSolution != []';
-do print '-RUBY-    puts(SlackCostSolution)';
+#do print '-RUBY-    puts(SlackCostSolution)';
 do print '-RUBY-    SlackCostSolution.each{|x| cslack[x.match(/^crZ\$([^\s]+)/)[1].sub("$", "->")] = x.match(/\s(\S+)\s/)[1]}';
 do print '-RUBY-end';
 do print '-RUBY-print("Slackkosten: ")';
