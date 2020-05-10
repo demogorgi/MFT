@@ -23,26 +23,26 @@ var p_neg[N] real >= 0; # negativer Teil der Puffermenge (falls > 0 gilt p_pos =
 var p_abs[N] real >= 0; # Betrag der Puffermenge ( = p_pos + p_neg )
 var sum_abs_p real >= 0; # Betragssumme der Puffermengen
 # Unterbrechungsmodell
-var u[N] real >= -infinity;
+var u[N] real >= -infinity; # alles analog zum Puffermodell
 var unt_pos[N] real >= 0;
 var unt_neg[N] real >= 0;
 var unt_abs[N] real >= 0;
 var sum_abs_unt real >= 0;
 # Kürzungsmodell
-var z[N] real >= -infinity;
+var z[N] real >= -infinity; # alles analog zum Puffermodell
 var kuz_pos[N] real >= 0;
 var kuz_neg[N] real >= 0;
 var kuz_abs[N] real >= 0;
 var sum_abs_kuz real >= 0;
 # Schlupfmodell
-var Z[N] real >= -infinity;
+var Z[N] real >= -infinity; # alles analog zum Puffermodell
 var Z_pos[N] real >= 0;
 var Z_neg[N] real >= 0;
 var Z_abs[N] real >= 0;
 var sum_abs_Z real >= 0;
 
 ### Zielfunktion
-# Minimiere Puffern, Unterbrechen, Kürzen unter Einhalteung der Reihenfolge
+# Minimiere Puffern, Unterbrechen, Kürzen unter Einhaltung der Reihenfolge
 minimize obj: sum <n> in N: ( p_abs[n] + C1 * unt_abs[n] + ( C1 + C2 ) * kuz_abs[n] + ( C1 + C2 + C3 ) * Z_abs[n] ) ;
 
 ### Nebenbedingungen
