@@ -67,32 +67,10 @@ subto kantenkapa:
 #########################################################################
 ## Ausgabe
 # Hier wird ein Ruby-Programm ausgegeben, mit dem hinterher eine Graphviz-Datei (http://graphviz.org/) erzeugt wird, die dann per dot das Ergebnis darstellt.
-do print '-RUBY-class Numeric';
-do print '-RUBY-   def go';
-do print '-RUBY-       if self == 0';
-do print '-RUBY-           1.0';
-do print '-RUBY-       else';
-do print '-RUBY-           self.abs == self ? s = 1.0 : s = -1.0';
-do print '-RUBY-           s * 10.0 ** (Math.log10(self.abs).floor)';
-do print '-RUBY-       end';
-do print '-RUBY-   end';
-do print '-RUBY-   def sig_round(d=0)';
-do print '-RUBY-       self.abs() < 1e-06 ? 0.0 : self';
-do print '-RUBY-       i = self.to_f';
-do print '-RUBY-       if d == 0';
-do print '-RUBY-           i.round';
-do print '-RUBY-       else';
-do print '-RUBY-           (((i / i.go * 10.0**d).round)/10.0**d)*i.go';
-do print '-RUBY-       end';
-do print '-RUBY-   end';
-do print '-RUBY-   def signif(d=4)';
-do print '-RUBY-       i = self.to_f';
-do print '-RUBY-       if (i - i.to_i).abs() < 0.00001';
-do print '-RUBY-           return i.to_i';
-do print '-RUBY-       else';
-do print '-RUBY-           Float("%.#{d}g" % i)';
-do print '-RUBY-       end';
-do print '-RUBY-   end';
+do print '-RUBY-class Float';
+do print '-RUBY-  def signif(signs)';
+do print '-RUBY-    Float("%.#{signs}g" % self)';
+do print '-RUBY-  end';
 do print '-RUBY-end';
 do print '-RUBY-';
 do print '-RUBY-def nullen(x)';
@@ -202,18 +180,18 @@ do print '-RUBY-dotFile << "              edge [ color = ', '\"', "#", '687466\"
 do print '-RUBY-dotFile << "\nnode [shape = box, fixedsize = false, fontcolor = ', '\"', "#", '084177\"', ' color = ', '\"', "#", '687466\"', '];\n"';
 #
 do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'f0f0f0\" ];\n"';
-do forall <n> in N with B[n] == 0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [", pl[n], ", ", pu[n], "]: #{buffer['", n, "'].to_f.signif()} (#{cbuffer['", n, "'].to_f.signif()})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif()} (#{cinterrupt['", n, "'].to_f.signif()})\\nz in [", zl[n], ", ", zu[n], "]: #{curtail['", n, "'].to_f.signif()} (#{ccurtail['", n, "'].to_f.signif()})\\nZ: #{slack['", n, "'].to_f.signif()} (#{cslack['", n, "'].to_f.signif()})", '\"];\n"';
+do forall <n> in N with B[n] == 0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [#{", pl[n], ".to_f.signif(4)}, #{", pu[n], ".to_f.signif(4)}]: #{buffer['", n, "'].to_f.signif(4)} (#{cbuffer['", n, "'].to_f.signif(4)})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif(4)} (#{cinterrupt['", n, "'].to_f.signif(4)})\\nz in [#{", zl[n], ".to_f.signif(4)}, #{", zu[n], ".to_f.signif(4)}]: #{curtail['", n, "'].to_f.signif(4)} (#{ccurtail['", n, "'].to_f.signif(4)})\\nZ: #{slack['", n, "'].to_f.signif(4)} (#{cslack['", n, "'].to_f.signif(4)})", '\"];\n"';
 #
 do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'cd8d7b\" ];\n"';
-do forall <n> in N with B[n] > 0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [", pl[n], ", ", pu[n], "]: #{buffer['", n, "'].to_f.signif()} (#{cbuffer['", n, "'].to_f.signif()})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif()} (#{cinterrupt['", n, "'].to_f.signif()})\\nz in [", zl[n], ", ", zu[n], "]: #{curtail['", n, "'].to_f.signif()} (#{ccurtail['", n, "'].to_f.signif()})\\nZ: #{slack['", n, "'].to_f.signif()} (#{cslack['", n, "'].to_f.signif()})", '\"];\n"';
+do forall <n> in N with B[n] > 0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [#{", pl[n], ".to_f.signif(4)}, #{", pu[n], ".to_f.signif(4)}]: #{buffer['", n, "'].to_f.signif(4)} (#{cbuffer['", n, "'].to_f.signif(4)})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif(4)} (#{cinterrupt['", n, "'].to_f.signif(4)})\\nz in [#{", zl[n], ".to_f.signif(4)}, #{", zu[n], ".to_f.signif(4)}]: #{curtail['", n, "'].to_f.signif(4)} (#{ccurtail['", n, "'].to_f.signif(4)})\\nZ: #{slack['", n, "'].to_f.signif(4)} (#{cslack['", n, "'].to_f.signif(4)})", '\"];\n"';
 #
 do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'fbc490\" ];\n"';
-do forall <n> in N with B[n] <  0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [", pl[n], ", ", pu[n], "]: #{buffer['", n, "'].to_f.signif()} (#{cbuffer['", n, "'].to_f.signif()})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif()} (#{cinterrupt['", n, "'].to_f.signif()})\\nz in [", zl[n], ", ", zu[n], "]: #{curtail['", n, "'].to_f.signif()} (#{ccurtail['", n, "'].to_f.signif()})\\nZ: #{slack['", n, "'].to_f.signif()} (#{cslack['", n, "'].to_f.signif()})", '\"];\n"';
+do forall <n> in N with B[n] <  0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [#{", pl[n], ".to_f.signif(4)}, #{", pu[n], ".to_f.signif(4)}]: #{buffer['", n, "'].to_f.signif(4)} (#{cbuffer['", n, "'].to_f.signif(4)})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif(4)} (#{cinterrupt['", n, "'].to_f.signif(4)})\\nz in [#{", zl[n], ".to_f.signif(4)}, #{", zu[n], ".to_f.signif(4)}]: #{curtail['", n, "'].to_f.signif(4)} (#{ccurtail['", n, "'].to_f.signif(4)})\\nZ: #{slack['", n, "'].to_f.signif(4)} (#{cslack['", n, "'].to_f.signif(4)})", '\"];\n"';
 #
 # Die nächste Zeile kann genutzt werden, wenn alle Kanten dargestellt werden sollen.
-#do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n"';
+#do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif(4)})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.to_f.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif(4)} in [', "#", '{', capl[i, j], '.to_f.signif(4)}', ", #", '{', capu[i, j], ".to_f.signif(4)}]", '\" ]\n"';
 # Die nächste Zeile kann genutzt werden, wenn nur die Kanten mit Kosten durch Flüsse dargestellt werden sollen
-do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif() > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif()})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif()} in [', "#", '{', capl[i, j], '.signif()}', ", #", '{', capu[i, j], ".signif()}]", '\" ]\n" end';
+do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif(4) > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif(4)})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.to_f.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif(4)} in [', "#", '{', capl[i, j], '.to_f.signif(4)}', ", #", '{', capu[i, j], ".to_f.signif(4)}]", '\" ]\n" end';
 do print '-RUBY-dotFile << "\noverlap = false\n"';
 do print '-RUBY-dotFile << "\nlabeljust=left"';
 do print '-RUBY-dotFile << "\n}"';
