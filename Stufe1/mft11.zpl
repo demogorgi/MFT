@@ -1,7 +1,8 @@
-# Konstanten C1, C2  und C3 in der ZF sorgen dafür, dass erst alles gepuffert wird, was hilft
-# bevor unterbrochen wird und dass alles unterbrochen wird, was hilft, bevor gekürzt wird.
-# Falls alles nicht hilft werden noch die Schlupfvariablen ZZ genutzt. Die ZZ-Variablen
-# helfen in Schritt 1.2, die Kürzungsgrenzen passend zu skalieren.
+# Konstanten C1, C2  und C3 in der Zielfunktion sorgen dafür, dass in dieser Stufe 1.1
+# erst alles gepuffert wird, was hilft bevor unterbrochen wird und
+# dass alles unterbrochen wird, was hilft, bevor gekürzt wird.
+# Falls puffern, unterbrechen und kürzen nicht ausreicht, werden noch die Schlupfvariablen Z genutzt.
+# Die Z-Variablen werden in Schritt 1.2 geeignet in Kürzungsmengen überführt.
 param c1 := 1.1 * sum <n> in N: max(abs(pl[n]),abs(pu[n]));
 param C1 := if c1 < 10 then 10 else c1 end;
 param c2 := 1.1 * sum <n> in N: max(abs(ul[n]),abs(uu[n]));
@@ -16,11 +17,11 @@ do print "c3 = ", c3, ", C3 = ", C3;
 # Kantenflussvariablen
 var f[E] real >= 0;
 # Puffermodell
-var p[N] real >= -infinity;
-var p_pos[N] real >= 0;
-var p_neg[N] real >= 0;
-var p_abs[N] real >= 0;
-var sum_abs_p real >= 0;
+var p[N] real >= -infinity; # Puffermenge ( = p_pos - p_neg )
+var p_pos[N] real >= 0; # positiver Teil der Puffermenge (falls > 0 gilt p_neg = 0)
+var p_neg[N] real >= 0; # negativer Teil der Puffermenge (falls > 0 gilt p_pos = 0)
+var p_abs[N] real >= 0; # Betrag der Puffermenge ( = p_pos + p_neg )
+var sum_abs_p real >= 0; # Betragssumme der Puffermengen
 # Unterbrechungsmodell
 var u[N] real >= -infinity;
 var unt_pos[N] real >= 0;
@@ -33,17 +34,16 @@ var kuz_pos[N] real >= 0;
 var kuz_neg[N] real >= 0;
 var kuz_abs[N] real >= 0;
 var sum_abs_kuz real >= 0;
-## Schlupfmodell
-#var ZZ[N] real >= -infinity;
-#var ZZ_pos[N] real >= 0;
-#var ZZ_neg[N] real >= 0;
-#var ZZ_abs[N] real >= 0;
-#var sum_abs_ZZ real >= 0;
+# Schlupfmodell
+var Z[N] real >= -infinity;
+var Z_pos[N] real >= 0;
+var Z_neg[N] real >= 0;
+var Z_abs[N] real >= 0;
+var sum_abs_Z real >= 0;
 
 ### Zielfunktion
 # Minimiere Puffern, Unterbrechen, Kürzen unter Einhalteung der Reihenfolge
-#minimize obj: sum <n> in N: ( p_abs[n] + C1 * unt_abs[n] + ( C1 + C2 ) * kuz_abs[n] + ( C1 + C2 + C3 ) * ZZ_abs[n] ) ;
-minimize obj: sum <n> in N: ( p_abs[n] + C1 * unt_abs[n] + ( C1 + C2 ) * kuz_abs[n] ) ;
+minimize obj: sum <n> in N: ( p_abs[n] + C1 * unt_abs[n] + ( C1 + C2 ) * kuz_abs[n] + ( C1 + C2 + C3 ) * Z_abs[n] ) ;
 
 ### Nebenbedingungen
 # Betrag des Pufferns
@@ -61,11 +61,11 @@ subto kabs1:
       forall <n> in N: z[n] == kuz_pos[n] - kuz_neg[n];
 subto kabs2:
       forall <n> in N: kuz_abs[n] == kuz_pos[n] + kuz_neg[n];
-## Betrag des Schlupfes
-#subto sabs1:
-#      forall <n> in N: ZZ[n] == ZZ_pos[n] - ZZ_neg[n];
-#subto sabs2:
-#      forall <n> in N: ZZ_abs[n] == ZZ_pos[n] + ZZ_neg[n];
+# Betrag des Schlupfes
+subto sabs1:
+      forall <n> in N: Z[n] == Z_pos[n] - Z_neg[n];
+subto sabs2:
+      forall <n> in N: Z_abs[n] == Z_pos[n] + Z_neg[n];
 
 # Netzpuffernutzung
 # p < 0 -> Befüllung
@@ -91,13 +91,15 @@ subto unterbrechung2:
 # z < 0 -> Entry-Kürzung
 # z > 0 -> Exit-Kürzung
 # Input für mft12
+subto kuerzung1:
+      forall <n> in N: zl[n] <= z[n] <= zu[n];
 subto kuerzung2:
       sum_abs_kuz == sum <n> in N: kuz_abs[n];
 
-## Schlupf
-## Input für mft12
-#subto schlupf:
-#      sum_abs_ZZ == sum <n> in N: ZZ_abs[n];
+# Schlupf
+# Input für mft12
+subto schlupf:
+      sum_abs_Z == sum <n> in N: Z_abs[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto kantenkapa:
@@ -106,5 +108,5 @@ subto kantenkapa:
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flussbilanz:
       # rein - raus + Puffer + Unterbrechung + Kürzung = - Bilanz (Bilanz>0 Überdeckung, <0 Unterdeckung)
-      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] == - B[n];
+      forall <n> in N: sum <i, n> in E: f[i, n] - sum <n, i> in E: f[n, i] + p[n] + u[n] + z[n] + Z[n] == - B[n];
 
