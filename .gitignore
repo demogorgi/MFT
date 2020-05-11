@@ -12,6 +12,7 @@ bck/
 *.rb
 *_12.zpl
 *_12_13.zpl
+*_23.zpl
 !doIt.rb
 !tests.rb
 !clean.rb
