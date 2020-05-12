@@ -31,11 +31,11 @@ ruby doIt.rb verzeichnis_daten_stufe21/dateiname_daten_stufe21_stufe_ohne_datein
 Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenkapazitäten. Für Stufe 2.2 werden bis auf die Überspeisungen zwischen den Gasbeschaffenheitszonen alle Kanten mit einer nicht restriktiven Kapazität versehen.
 
 #### Beispiel
-##### Berechnung des Szenarios Szenatio1
-ruby doIt.rb Szenario2/ug_21 Szenario2/ug_22
+##### Berechnung des Szenarios "Szenario1"
+ruby doIt.rb Szenario1/ug_21 Szenario1/ug_22
 
 ### Ausgabe:
-Insbesondere eine png-Datei, die die Ergebnisse visualisiert.
-![](Stufe2/example_result_step2.pdf)
+Zu beschaffende Regelenergie global und Gasbeschaffenheitsspezifisch und erforderliche Unterbrechungen und Kürzungen in den NBZ.
+![](Stufe2/example_result_step2.png)
 
 
