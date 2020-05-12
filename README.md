@@ -25,7 +25,7 @@ Insbesondere eine png-Datei, die die Ergebnisse visualisiert.
 ### Aufruf
 #### Berechnung eines Szenarios
     ruby doIt.rb verzeichnis_daten_stufe21/dateiname_daten_stufe21_stufe_ohne_dateinamenerweiterung verzeichnis_daten_stufe22/dateiname_daten_stufe22_stufe_ohne_dateinamenerweiterung
-Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenkapazitäten. Für Stufe 2.2 werden bis auf die Überspeisungen zwischen den Gasbeschaffenheitszonen alle Kanten mit einer nicht restriktiven Kapazität versehen.
+Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenkapazitäten. Für Stufe 2.2 werden bis auf die Überspeisungen zwischen den Gasbeschaffenheitszonen alle Kanten mit einer nicht restriktiven Kapazität versehen. Dies hat den regulatorischen Hintergrund, dass Engpässe innerhalb einer Gasbeschaffenheit eigentlich nicht vorkommen dürfen und falls sie es doch tun, diese nicht durch Regelenergieeinsatz behoben werden dürfen.
 
 #### Beispiel
 ##### Berechnung des Szenarios "Szenario1"
@@ -35,13 +35,15 @@ Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenka
 Zu beschaffende Regelenergie global und gasbeschaffenheitsspezifisch und erforderliche Unterbrechungen und Kürzungen in den NBZ.
 
 ### Erläuterungen:
-Die Sufe 2 arbeitet in drei Schritten:
+Die Sufe 2 arbeitet in vier Schritten:
 
-2.1. Berechnung der globalen und der gasbeschaffenheitsspezifischen Regelenergie, sowie Fehlmengen, die in den NBZ verbleiben müssen, da sie nicht mit globaler oder gasbeschaffenheitsspezifischer Regelenergie abgewickelt werden können
+2.1. Berechnung der globalen und der gasbeschaffenheitsspezifischen Regelenergie. Die Kapazitäten innerhalb einer Gasbeschaffenheitszone sind nicht restriktiv. Die Regelenergie wird so berechnet, dass in jedem Extremszenario die Überspeisekapazitäten zwischen den Gasbeschaffenheitszonen ausreichen, um die Bilanzen der Gasbeschaffenheitszonen auszugleichen. Das Ergebnis wird in den folgenden beiden Stufen *nicht* weiterverwendet.
 
-2.2. Berechnung der Unterbrechungs- und Kürzungsmengen je Gasbeschaffenheitszone
+2.2. Wie in Schritt 1.1, jedoch mit den tatsächlichen Kapazitäten. Die Regelenergiemengen sind dann höchstens genauso groß wie in Schritt 2.1 und zusätzlich können Restmengen in den Knoten verbleiben, die dann durch Unterbrechung und Kürzung "neutralisiert" werden. In diesem Schritt wird nur die Unterbrechungs- und Kürzungsbetragssumme ermittelt, die dann in Schritt 2.3 als Parameter verwendet werden.
 
-2.3. Berechnung der gleichmäßigen Verteilung von Kürzung und Unterbrechung je Gasbeschaffenheitszone
+2.3. In diesem Schritt werden die Kürzungs- und Unterbrechungsmengen aus Schritt 2.2 soweit möglich auf weitere Knoten verteilt.
+
+2.4 Dieser Schritt ist nicht implementiert, aber er funktioniert ganz ähnlich. In der Gasbeschaffenheit H müssen zwei Engpasszonen modelliert werden. Die Berechnung erfolgt dann analog zu Schritt 2.2 jedoch komplett ohne den L-Gas-Teil. Das Ergebnis sind dann die Restmengen, die über marktbasierte Instrumente (MBI) abgewickelt werden.
 #### Rechenbeispiele
 Gedanklich sollen die unten in den Bildern dargestellten Werte der Zustand NACH der Berechnung von Stufe 1 sein. Die Kapazitäten sind die Kapazitäten für Stufe 2, die sich aus den Kapazitäten und den Flüssen aus Stufe 1 ergeben. Die Planwerte und das Puffern aus Stufe 1 sind also schon verrechnet.
 ##### Szenario 1
