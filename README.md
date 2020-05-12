@@ -37,7 +37,7 @@ Zu beschaffende Regelenergie global und gasbeschaffenheitsspezifisch und erforde
 ### Erläuterungen:
 Die Sufe 2 arbeitet in vier Schritten:
 
-2.1. Berechnung der globalen und der gasbeschaffenheitsspezifischen Regelenergie. Die Kapazitäten innerhalb einer Gasbeschaffenheitszone sind nicht restriktiv. Die Regelenergie wird so berechnet, dass in jedem Extremszenario die Überspeisekapazitäten zwischen den Gasbeschaffenheitszonen ausreichen, um die Bilanzen der Gasbeschaffenheitszonen auszugleichen. Das Ergebnis wird in den folgenden beiden Stufen *nicht* weiterverwendet.
+2.1. Berechnung der globalen und der gasbeschaffenheitsspezifischen Regelenergie. Die Kapazitäten innerhalb einer Gasbeschaffenheitszone sind nicht restriktiv. Die Regelenergie wird so berechnet, dass in jedem Extremszenario die Überspeisekapazitäten zwischen den Gasbeschaffenheitszonen ausreichen, um die Bilanzen der Gasbeschaffenheitszonen auszugleichen. Das Ergebnis wird in den folgenden beiden Stufen *nicht* weiterverwendet. (Ein Extremszenario zeichnet sich dadurch aus, dass die komplette Globalmenge und die kompletten GBH-Mengen komplett in einem Knoten realisiert werden)
 
 2.2. Wie in Schritt 1.1, jedoch mit den tatsächlichen Kapazitäten. Die Regelenergiemengen sind dann höchstens genauso groß wie in Schritt 2.1 und zusätzlich können Restmengen in den Knoten verbleiben, die dann durch Unterbrechung und Kürzung "neutralisiert" werden. In diesem Schritt wird nur die Unterbrechungs- und Kürzungsbetragssumme ermittelt, die dann in Schritt 2.3 als Parameter verwendet werden.
 
