@@ -5,13 +5,10 @@
 ### Aufruf
 #### Berechnung eines Szenarios
     ruby doIt.rb verzeichnis_daten_erste_stufe/dateiname_daten_erste_stufe_ohne_dateinamenerweiterung
-#### Berechnung aller Szenarien und Kopieren der Ergebnis-pngs nach Stufe1/Tests
-    ruby tests.rb
-
-#### Beispiel
+    #### Beispiel
 ##### Berechnung des Szenarios hs_111
     ruby doIt.rb hs_111/hs_111
-##### Berechnung aller Szenarien
+#### Berechnung aller Szenarien und Kopieren der Ergebnis-pngs nach Stufe1/Tests
     ruby tests.rb
 
 Achtung: damit tests.rb für jedes Szenario funktioniert muss die Zimpl-Datei den gleichen Namen haben wie ihr übergeordnetes Verzeichnis, also z.B. Stufe1/hs_111/hs_111.zpl
@@ -36,6 +33,6 @@ Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenka
 
 ### Ausgabe:
 Zu beschaffende Regelenergie global und Gasbeschaffenheitsspezifisch und erforderliche Unterbrechungen und Kürzungen in den NBZ.
-![](example_result_step1.png)
+![](example_result_step2.png)
 
 
