@@ -36,8 +36,11 @@ Zu beschaffende Regelenergie global und gasbeschaffenheitsspezifisch und erforde
 
 ### Erläuterungen:
 Die Sufe 2 arbeitet in drei Schritten:
+
 2.1. Berechnung der globalen und der gasbeschaffenheitsspezifischen Regelenergie, sowie Fehlmengen, die in den NBZ verbleiben müssen, da sie nicht mit globaler oder gasbeschaffenheitsspezifischer Regelenergie abgewickelt werden können
+
 2.2. Berechnung der Unterbrechungs- und Kürzungsmengen je Gasbeschaffenheitszone
+
 2.3. Berechnung der gleichmäßigen Verteilung von Kürzung und Unterbrechung je Gasbeschaffenheitszone
 #### Rechenbeispiele
 Gedanklich sollen die unten in den Bildern dargestellten Werte der Zustand NACH der Berechnung von Stufe 1 sein. Die Kapazitäten sind die Kapazitäten für Stufe 2, die sich aus den Kapazitäten und den Flüssen aus Stufe 1 ergeben. Die Planwerte und das Puffern aus Stufe 1 sind also schon verrechnet.
