@@ -45,19 +45,19 @@ param capu[E] :=
 
 # was kann unterbrochen werden
 param ul[N] :=
-<"B"> -5 default -10;
+<"B"> -50 default -100;
 
 # was kann unterbrochen werden
 param uu[N] :=
-<"B"> 5 default 10;
+<"B"> 50 default 100;
 
 # was kann gekuerzt werden
 param zl[N] :=
-<"A"> -10 default -10;
+<"A"> -100 default -100;
 
 # was kann gekuerzt werden
 param zu[N] :=
-<"A"> 10 default 10;
+<"A"> 100 default 100;
 
 
 ##################################################################################################

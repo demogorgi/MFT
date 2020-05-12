@@ -1,11 +1,15 @@
-###################
+########################################################################################################################################################
 #
-# In diesem Schritt 2.1 wird ermittelt, welche Menge global und welche Mengen je Gasbeschaffenheitszone beschafft werden müssen.
-# Außerdem wird ermittelt, welche Menge in einzelnen Knoten verbleibt.
+# In diesem Schritt 2.1 werden die globalen und die gasbeschaffenheitsspezifischen Mengen ermittelt.
+# Dabei werden aufgrund regulatorischer Vorgaben die Kapazitäten innerhalb der Gasbeschaffenheitszonen nicht restriktiv angesetzt.
+# Lediglich die Überspeisekapazitäten zwischen den Gasbeschaffenheitszonen entsprechen den realen Werten.
+# Die Bilanzen der NBZ für diesen Schritt ergeben sich in der Realität als Summe der Unterbrechungs- und Kürzungsmengen aus Schrtitt 1.1.
+# Die Kantenkapazitäten für diesen Schritt ergeben sich aus den Eingangskapazitäten für Schritt 1.1, bereinigt um die in Schritt 1.1 ermittelten Flüsse.
 #
-###################
+########################################################################################################################################################
 
 ### Parameter
+# Extremszenariomodellierung: die ri dienen dazu alle Szenarien zu modellieren. Jede Kombination von r1,r2,r3 stellt ein Extremszenario dar
 param z1 := card(Z1); # Anzahl NBZ in der Zone GBH1
 param z2 := card(Z2); # Anzahl NBZ in der Zone GBH2
 set S := { 1 .. ( card(N) * z1 * z2 ) }; # Indizes der Extremszenarien
@@ -44,14 +48,9 @@ var GBH2_abs >= 0;
 var GBH2_pos >= 0;
 var GBH2_neg >= 0;
 #
-var Lok[<n> in N] >= -infinity;
-var Lok_abs[<n> in N] >= 0;
-var Lok_pos[<n> in N] >= 0;
-var Lok_neg[<n> in N] >= 0;
-
 ### Zielfunktion
-# Minimiere Regelenergie
-minimize obj: Glo_abs + 10 * ( GBH1_abs + GBH2_abs ) + 100 * sum <n> in N: Lok_abs[n];
+# Minimiere Regelenergie gemäß Reihenfolge
+minimize obj: Glo_abs + 10 * ( GBH1_abs + GBH2_abs );
 
 ### Nebenbedingungen
 # Fehlmengen und Betrag der Fehlmengen
@@ -67,10 +66,6 @@ subto fehlGBH2_1:
       GBH2_abs == GBH2_pos + GBH2_neg;
 subto fehlGBH2_2:
       GBH2 == GBH2_pos - GBH2_neg;
-subto fehlL1:
-      forall <n> in N: Lok_abs[n] == Lok_pos[n] + Lok_neg[n];
-subto fehlL2:
-      forall <n> in N: Lok[n] == Lok_pos[n] - Lok_neg[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto capacities2_4:
@@ -78,7 +73,7 @@ subto capacities2_4:
 
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flowBalance1:
-      forall <s, n> in S * N: BalanceSN[s,n] == BalanceN[n] + r1[s,n] * Glo + r2[s,n] * GBH1 + r3[s,n] * GBH2 + Lok[n];
+      forall <s, n> in S * N: BalanceSN[s,n] == BalanceN[n] + r1[s,n] * Glo + r2[s,n] * GBH1 + r3[s,n] * GBH2;
 subto flowBalance2:
       forall <s, n> in S * N: sum <i, n> in E: F[s, i, n] - sum <n, i> in E: F[s, n, i] == - BalanceSN[s, n];
 

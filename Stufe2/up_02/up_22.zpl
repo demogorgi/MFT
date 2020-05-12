@@ -41,8 +41,8 @@ param capl[E] :=
 <"A","B"> 0 default 0;
 
 param capu[E] :=
-<"A","B"> 1000,
-<"B","A"> 1000 default 0;
+<"A","D"> 1000,
+<"D","A"> 1000 default 0;
 
 # was kann unterbrochen werden
 param ul[N] :=
@@ -54,11 +54,11 @@ param uu[N] :=
 
 # was kann gekuerzt werden
 param zl[N] :=
-<"A"> -10 default -10;
+<"A"> -100 default -100;
 
 # was kann gekuerzt werden
 param zu[N] :=
-<"A"> 10 default 10;
+<"A"> 100 default 100;
 
 
 ##################################################################################################

@@ -1,8 +1,9 @@
 #!/usr/bin/ruby
 # ####################################################
 # Invocation:
-# TODO_______Argument wihtout extensions: path_to_first_step_data
-# TODO_______Example: ruby doIt.rb up_03_big/up_03
+# ruby doIt.rb path_to_step21_datafile_without extension path_to_step22_datafile_without extension 
+# Example: 
+# ruby doIt.rb Szenario1P/ug_21 Szenario1P/ug_22
 # ####################################################
 
 # generates lp file for scip
@@ -49,7 +50,7 @@ wdir = File.dirname(ARGV[0])
 data21 = File.basename(ARGV[0])
 data22 = File.basename(ARGV[1])
 data23 = File.basename(ARGV[1]) + "_23"
-# directory with mft11, mft12 and doIt.rb
+# directory with mft21, mft22, mft23 and doIt.rb
 modeldir = __dir__
 # Go into testcase directory
 Dir.chdir(wdir)
@@ -68,9 +69,9 @@ s1 = scipfile(data21)
 # execute scip with control file for step 2.1
 puts `scip < #{s1}`
 # display relevant part
-puts "###### 2.1 global and quality ##################################"
+puts "###### 2.1 global and quality (not used for next step, due to regulatory rules) ####"
 system("grep -E \"Glo |GBH. \" #{data21}.sol")
-puts "################################################################\n\n"
+puts "####################################################################################\n\n"
 #
 # Step 2.2
 # generate lp-file for step 2.1

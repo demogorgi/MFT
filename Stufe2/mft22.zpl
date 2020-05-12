@@ -1,21 +1,25 @@
-###################
+########################################################################################################################################
 #
-# In diesem Schritt 2.2 wird ermittelt, welche Menge global und welche Mengen je Gasbeschaffenheitszone beschafft werden müssen.
-# Außerdem wird die Lok-Menge jedes Knotens als Unterbrechungs- und Kürzungsmenge auf das Engpassgebiet verteilt.
+# In diesem Schritt 2.2 werden die Kapazitäten innerhalb der Gasbeschaffenheitszonen realistisch angesetzt.
+# Daher kann es passieren, das es Regelenergieszenarien gibt, in denen die vorhandenen Kapazitäten nicht ausreichen,
+# um die beschafften Mengen im Marktgebiet bedarfsgerecht zu verteilen.
+# Dieser Schritt dient dazu die Höhe der erforderlichen Unterbrechungen und Kürzungen zu ermitteln.
 #
-###################
+########################################################################################################################################
 
 # Konstante sorgt in der ZF dafür, dass erst alles unterbrochen wird, was hilft
 param C := if sum <n> in N: max(abs(ul[n]),abs(uu[n])) == 0 then 100 else sum <n> in N: max(abs(ul[n]),abs(uu[n])) end;
 
 ### Parameter
 # Extremszenariomodellierung: die ri dienen dazu alle Szenarien zu modellieren. Jede Kombination von r1,r2,r3 stellt ein Extremszenario dar
-param z1 := card(Z1);
-param z2 := card(Z2);
-set S := { 1 .. ( card(N) * z1 * z2 ) };
+param z1 := card(Z1); # Anzahl NBZ in der Zone GBH1
+param z2 := card(Z2); # Anzahl NBZ in der Zone GBH2
+set S := { 1 .. ( card(N) * z1 * z2 ) }; # Indizes der Extremszenarien
+# Diese Klimmzüge werden hier benötigt, um alle Mengenverteilungskombinationen zu modellieren. Das geht in anderen Programmiersprachen deutlich einfacher.
 param r1[<s, n> in S * N] := if z1 * z2 * ( cnt[n] - 1 ) + 1 <= s and s <= z1 * z2 * cnt[n] then 1 else 0 end;
 param r2[<s, n> in S * N] := if cnt[n] <= z1 and ( s - cnt[n] ) mod z1 == 0 then 1 else 0 end;
 param r3[<s, n> in S * N] := if z1 < cnt[n] and cnt[n] <= z1 + z2 and ( ( cnt[n] - z1 ) * z1 - z1 + 1 <= s mod ( z1 * z2 ) or ( cnt[n] == z1 + z2 and s mod ( z1 * z2 ) == 0 ) ) and s mod ( z1 * z2 ) <= ( cnt[n] - z1 ) * z1 then 1 else 0 end;
+# Ausgabe aller Kombinationen
 #do print "r1:";
 #do forall <s, n> in S * N do print "s: ", s, " n: ", cnt[n] ,": ", r1[s, n];
 #do print "r2:";
@@ -24,7 +28,7 @@ param r3[<s, n> in S * N] := if z1 < cnt[n] and cnt[n] <= z1 + z2 and ( ( cnt[n]
 #do forall <s, n> in S * N do print "s: ", s, " n: ", cnt[n] ,": ", r3[s, n];
 
 ### Variablen
-# Kantenflussvariablen
+# Kantenflussvariablen für jedes Szenario
 var F[S * E] real >= 0;
 
 # Bilanzvariablen
@@ -64,20 +68,10 @@ var kuz_neg[N] real >= 0;
 var kuz_abs[N] real >= 0;
 var sum_abs_kuz real >= 0;
 
-subto unterbrechung1:
-      forall <n> in N: ul[n] <= u[n] <= uu[n];
-subto unterbrechung2:
-      sum_abs_unt == sum <n> in N: unt_abs[n];
-
-#subto kuerzung1:
-#      forall <n> in N: zl[n] <= z[n] <= zu[n];
-subto kuerzung2:
-      sum_abs_kuz == sum <n> in N: kuz_abs[n];
-
 ### Zielfunktion
-# Minimiere 
-#minimize obj: Glo_abs + 10 * ( GBH1_abs + GBH2_abs ) + 100 * sum <n> in N: Lok_abs[n] + sum <n> in N: unt_abs[n] + C * sum <n> in N: kuz_abs[n] ;
-minimize obj: Glo_abs + 10 * ( GBH1_abs + GBH2_abs ) + 100 * sum <n> in N: ( unt_abs[n] + C * kuz_abs[n] ) + sum <n> in N: Lok_abs[n];
+# Minimiere Unterbrechung und Kürzung gemäß Reihenfolge
+#minimize obj: sum <n> in N: ( unt_abs[n] + C * kuz_abs[n] );
+minimize obj: Glo_abs + 10 * ( GBH1_abs + GBH2_abs ) + 100 * sum <n> in N: ( unt_abs[n] + C * kuz_abs[n] );
 
 ### Nebenbedingungen
 # Fehlmengen und Betrag der Fehlmengen
@@ -103,14 +97,24 @@ subto uabs1:
       forall <n> in N: u[n] == unt_pos[n] - unt_neg[n];
 subto uabs2:
       forall <n> in N: unt_abs[n] == unt_pos[n] + unt_neg[n];
+# Unterbrechungsgrenzen
+subto unterbrechung1:
+      forall <n> in N: ul[n] <= u[n] <= uu[n];
+# Unterbrechungsbetragssumme
+subto unterbrechung2:
+      sum_abs_unt == sum <n> in N: unt_abs[n];
+
 # Betrag der Kürzungen
 subto kabs1:
       forall <n> in N: z[n] == kuz_pos[n] - kuz_neg[n];
 subto kabs2:
       forall <n> in N: kuz_abs[n] == kuz_pos[n] + kuz_neg[n];
-
-subto u_z_eq_L:
-      forall <n> in N: u[n] + z[n] == Lok[n];
+# Kürzungsgrenzen
+subto kuerzung1:
+      forall <n> in N: zl[n] <= z[n] <= zu[n];
+# Kürzungsbetragssumme
+subto kuerzung2:
+      sum_abs_kuz == sum <n> in N: kuz_abs[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto capacities2_4:
@@ -118,7 +122,7 @@ subto capacities2_4:
 
 # Am Ende müssen alle Knoten ausgeglichen sein
 subto flowBalance1:
-      forall <s, n> in S * N: BalanceSN[s,n] == BalanceN[n] + r1[s,n] * Glo + r2[s,n] * GBH1 + r3[s,n] * GBH2 + Lok[n];
+      forall <s, n> in S * N: BalanceSN[s,n] == BalanceN[n] + r1[s,n] * Glo + r2[s,n] * GBH1 + r3[s,n] * GBH2 + u[n] + z[n];
 subto flowBalance2:
       forall <s, n> in S * N: sum <i, n> in E: F[s, i, n] - sum <n, i> in E: F[s, n, i] == - BalanceSN[s, n];
 

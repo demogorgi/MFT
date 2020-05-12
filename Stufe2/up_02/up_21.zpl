@@ -54,11 +54,11 @@ param uu[N] :=
 
 # was kann gekuerzt werden
 param zl[N] :=
-<"A"> -10 default -10;
+<"A"> -100 default -100;
 
 # was kann gekuerzt werden
 param zu[N] :=
-<"A"> 10 default 10;
+<"A"> 100 default 100;
 
 
 ##################################################################################################
