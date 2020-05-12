@@ -5,7 +5,7 @@
 ### Aufruf
 #### Berechnung eines Szenarios
     ruby doIt.rb verzeichnis_daten_erste_stufe/dateiname_daten_erste_stufe_ohne_dateinamenerweiterung
-    #### Beispiel
+#### Beispiel
 ##### Berechnung des Szenarios hs_111
     ruby doIt.rb hs_111/hs_111
 #### Berechnung aller Szenarien und Kopieren der Ergebnis-pngs nach Stufe1/Tests
@@ -32,7 +32,7 @@ Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenka
     ruby doIt.rb Szenario1/ug_21 Szenario1/ug_22
 
 ### Ausgabe:
-Zu beschaffende Regelenergie global und Gasbeschaffenheitsspezifisch und erforderliche Unterbrechungen und Kürzungen in den NBZ.
+Zu beschaffende Regelenergie global und gasbeschaffenheitsspezifisch und erforderliche Unterbrechungen und Kürzungen in den NBZ.
 ![](example_result_step2.png)
 
 
