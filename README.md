@@ -33,6 +33,24 @@ Die Daten von Stufe 2.1 und von Stufe 2.2 unterscheiden sich nur in den Kantenka
 
 ### Ausgabe:
 Zu beschaffende Regelenergie global und gasbeschaffenheitsspezifisch und erforderliche Unterbrechungen und Kürzungen in den NBZ.
-![](example_result_step2.png)
+
+### Erläuterungen:
+Die Sufe 2 arbeitet in drei Schritten:
+2.1. Berechnung der globalen und der gasbeschaffenheitsspezifischen Regelenergie, sowie Fehlmengen, die in den NBZ verbleiben müssen, da sie nicht mit globaler oder gasbeschaffenheitsspezifischer Regelenergie abgewickelt werden können
+2.2. Berechnung der Unterbrechungs- und Kürzungsmengen je Gasbeschaffenheitszone
+2.3. Berechnung der gleichmäßigen Verteilung von Kürzung und Unterbrechung je Gasbeschaffenheitszone
+#### Rechenbeispiele
+Gedanklich sollen die unten in den Bildern dargestellten Werte der Zustand NACH der Berechnung von Stufe 1 sein. Die Kapazitäten sind die Kapazitäten für Stufe 2, die sich aus den Kapazitäten und den Flüssen aus Stufe 1 ergeben. Die Planwerte und das Puffern aus Stufe 1 sind also schon verrechnet.
+##### Szenario 1
+Beobachtung 1: Bei B und C zusammen müssen 25 Einheiten durch Unterbrechung und Kürzung "weg", da sonst die Kapazitäten zu A in manchen Szenarien nicht ausreichen, um die Bilanz auszugleichen.<br>
+Beobachtung 2: Zwischen B und C gibt es keinen Engpass.<br>
+Beobachtugn 3: Das Unterbrechungspotenzial bei B und C ist in Summe kleiner als -25 Einheiten, nämlich -15 Einheiten. Diese werden also komplett unterbrochen. Die verbleibenden 10 Einheiten müssen also gekürzt werden. Da das Kürzungspotenzial bei beiden gleich ist, werden bei B und bei C folglich jeweils -5 Einheiten gekürzt.<br>
+![](example_result_step2_szenario1.png)
+
+##### Szenario 2
+Beobachtung 1: Es hat sich im Vergleich zu Szenario 1 lediglich das Entryunterbrechungspotenzial bei C geändert von -10 auf -50.
+Beobachtugn 2: Das Unterbrechungspotenzial bei B und bei C ist nun ausreichend, um die erforderlichen 25 Einheiten darzustellen.
+Beobachtung 3: Das Unterbrechungspotenzial bei C ist 10 mal höher, als das bei B. Daher wird bei C auch die 10-fache Menge unterbrochen: 2.27... * 10 = 22.72...
+![](example_result_step2_szenario2.png)
 
 
