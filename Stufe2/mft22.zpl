@@ -1,3 +1,10 @@
+###################
+#
+# In diesem Schritt 2.2 wird ermittelt, welche Menge global und welche Mengen je Gasbeschaffenheitszone beschafft werden müssen.
+# Außerdem wird die Lok-Menge jedes Knotens als Unterbrechungs- und Kürzungsmenge auf das Engpassgebiet verteilt.
+#
+###################
+
 # Konstante sorgt in der ZF dafür, dass erst alles unterbrochen wird, was hilft
 param C := if sum <n> in N: max(abs(ul[n]),abs(uu[n])) == 0 then 100 else sum <n> in N: max(abs(ul[n]),abs(uu[n])) end;
 

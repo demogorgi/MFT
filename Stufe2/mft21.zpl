@@ -1,10 +1,19 @@
+###################
+#
+# In diesem Schritt 2.1 wird ermittelt, welche Menge global und welche Mengen je Gasbeschaffenheitszone beschafft werden müssen.
+# Außerdem wird ermittelt, welche Menge in einzelnen Knoten verbleibt.
+#
+###################
+
 ### Parameter
-param z1 := card(Z1);
-param z2 := card(Z2);
-set S := { 1 .. ( card(N) * z1 * z2 ) };
+param z1 := card(Z1); # Anzahl NBZ in der Zone GBH1
+param z2 := card(Z2); # Anzahl NBZ in der Zone GBH2
+set S := { 1 .. ( card(N) * z1 * z2 ) }; # Indizes der Extremszenarien
+# Diese Klimmzüge werden hier benötigt, um alle Mengenverteilungskombinationen zu modellieren. Das geht in anderen Programmiersprachen deutlich einfacher.
 param r1[<s, n> in S * N] := if z1 * z2 * ( cnt[n] - 1 ) + 1 <= s and s <= z1 * z2 * cnt[n] then 1 else 0 end;
 param r2[<s, n> in S * N] := if cnt[n] <= z1 and ( s - cnt[n] ) mod z1 == 0 then 1 else 0 end;
 param r3[<s, n> in S * N] := if z1 < cnt[n] and cnt[n] <= z1 + z2 and ( ( cnt[n] - z1 ) * z1 - z1 + 1 <= s mod ( z1 * z2 ) or ( cnt[n] == z1 + z2 and s mod ( z1 * z2 ) == 0 ) ) and s mod ( z1 * z2 ) <= ( cnt[n] - z1 ) * z1 then 1 else 0 end;
+# Ausgabe aller Kombinationen
 #do print "r1:";
 #do forall <s, n> in S * N do print "s: ", s, " n: ", cnt[n] ,": ", r1[s, n];
 #do print "r2:";
@@ -13,7 +22,7 @@ param r3[<s, n> in S * N] := if z1 < cnt[n] and cnt[n] <= z1 + z2 and ( ( cnt[n]
 #do forall <s, n> in S * N do print "s: ", s, " n: ", cnt[n] ,": ", r3[s, n];
 
 ### Variablen
-# Kantenflussvariablen
+# Kantenflussvariablen für jedes Szenario
 var F[S * E] real >= 0;
 
 # Bilanzvariablen

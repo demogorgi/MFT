@@ -42,11 +42,20 @@ param capl[E] :=
 
 param capu[E] :=
 <"A","D"> 70,
-<"D","A"> 70 default 1000;
+<"D","A"> 70,
+<"D","E"> 20,
+<"E","D"> 20,
+<"A","B"> 20,
+<"B","A"> 20,
+<"A","C"> 20,
+<"C","A"> 20,
+<"B","C"> 100,
+<"C","B"> 100;
 
 # was kann unterbrochen werden
 param ul[N] :=
-<"B"> -5 default -10;
+<"B"> -5,
+<"C"> -50 default -10;
 
 # was kann unterbrochen werden
 param uu[N] :=

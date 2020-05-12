@@ -15,47 +15,39 @@ param r3[<s, n> in S * N] := if z1 < cnt[n] and cnt[n] <= z1 + z2 and ( ( cnt[n]
 #do print "r3:";
 #do forall <s, n> in S * N do print "s: ", s, " n: ", cnt[n] ,": ", r3[s, n];
 
-# Polynom 2. Grades (Scheitelpunktform) wird für Kostenfunktionen verwendet. Scheitelpunkt ist S(d|e).
-defnumb h(x, a, d, e) := a * ( x - d ) ** 2 + e;
+# Koeffizient für Parabel auf [0,bound] mit dem Wert s an der Stelle bound.
+defnumb koeffizient(max_bound,s,bound) := if bound == 0 then
+                                             0
+                                          else
+                                             s / ( max_bound * abs(bound) )
+                                          end;
 
-# Berechnung Position des k-ten Linearisierungsknotens
-defnumb getKnot(k, lb, ub, numIntervals) := if k == 0 then lb else lb + k * ( ub - lb ) / numIntervals end;
+# ermittelt die Größenordnung einer Zahl. Wird genutzt um numerische Probleme bei den Puffer-, Unterbrechungs- und Kürzungskosten zu vermeiden.
+defnumb groessenordnung(num) := if num == 0 then
+                                   1.0
+                                else
+                                   if abs(num) == num then
+                                        10.0 ** floor(log(abs(num)))
+                                   else
+                                      - 10.0 ** floor(log(abs(num)))
+                                   end
+                                end;
 
-# Berechnung der Steigung des k-ten Linearitätsbereichs
-defnumb getSlope(knotkminus1, knotk, a, d, e) := if knotk == knotkminus1 then 0 else ( h(knotk, a, d, e) - h(knotkminus1, a, d, e) ) / ( knotk - knotkminus1 ) end;
+# Maximal auftretende Unterbrechungsgrenze (Betrag)
+param ulmax := max <n> in N : abs(ul[n]);
+param uumax := max <n> in N : abs(uu[n]);
+param umax := max(ulmax,uumax);
+#
+param aDul[<i> in N] := koeffizient(umax,10 * groessenordnung(umax),ul[i]);
+param aDuu[<i> in N] := koeffizient(umax,10 * groessenordnung(umax),uu[i]);
 
-# Intervallanzahlen für Linearisierungen
-param numIntervals := 6000;
-
-# Abweichung vom gemeinsamem Ratio
-param d := 0;
-param e := 0;
-param a := 1;
-
-# Modellierung Kosten Abweichung vom gemeinsamen Ratio
-# Anzahl der Linearitätsbereiche
-set knotIndicesD := { 0 .. numIntervals };
-# Äquidistante Zerlegung von -1 bis 1
-param knotsD[<k> in knotIndicesD] := getKnot(k, -100, 100, numIntervals);
-#param knotsD[<k> in knotIndicesD] := getKnot2(k, a, d, e, e, wmax, numIntervals); 
-param slope[<k> in { 1 .. numIntervals }] := getSlope(knotsD[k-1], knotsD[k], a, d, e);
-## Nur stdout
-#do print "---------> knotsD:";
-#do forall <k> in knotIndicesD do print knotsD[k];
-#do print "---------> InfoD: (knotsD[k-1], h(knotsD[k-1])), (knotsD[k], h(knotsD[k])), slope"; 
-#do forall <k> in { 1 .. numIntervals } do print "(", knotsD[k-1], ", ", h(knotsD[k-1], a, d, e), "), (", knotsD[k], ", ", h(knotsD[k], a, d, e), "), ", slope[k];  
-#do print "---------> Linearisierung:";
-#do forall <k> in { 1 .. numIntervals } do print slope[k], " * ( x - ", knotsD[k], " ) + ", h(knotsD[k], a, d, e);
-#do print "(*-dev-----> Originalfunktion:*)";
-#do print "Plot[";
-#do print "Piecewise[{{", a, "* ( x - (", d, ") )^2 + ", e, ", ", -1, " <= x <= ", 1, "}, Nothing}],";
-#do print " {x,-1,1}]";
-
-# Big-Ms für Produktmodellierung
-param Mu := a * ( sum <n> in N: max(abs(ul[n]),abs(uu[n])) ) ** 2;
-param Mz := a * ( ( sum <n> in N: abs(BalanceN[n]) ) / ( min <n> in N: min(abs(ul[n]), abs(uu[n])) ) ) ** 2;
-do print "Mu = ", Mu;
-do print "Mz = ", Mz;
+# Maximal auftretende Kürzungsgrenze (Betrag)
+param zlmax := max <n> in N : abs(zl[n]);
+param zumax := max <n> in N : abs(zu[n]);
+param zmax := max(zlmax,zumax);
+#
+param aDzl[<i> in N] := koeffizient(zmax,10 * groessenordnung(zmax),zl[i]);
+param aDzu[<i> in N] := koeffizient(zmax,10 * groessenordnung(zmax),zu[i]);
 
 ### Variablen
 # Kantenflussvariablen
@@ -69,98 +61,66 @@ var u[N] real >= -infinity;
 var unt_pos[N] real >= 0;
 var unt_neg[N] real >= 0;
 var unt_abs[N] real >= 0;
+var crul[N] real >= 0;
+var cruu[N] real >= 0;
 var cru[N] real >= 0;
-var cru_x_p[N] real >= 0;
 # Kürzungsmodell
 var z[N] real >= -infinity;
 var kuz_pos[N] real >= 0;
 var kuz_neg[N] real >= 0;
 var kuz_abs[N] real >= 0;
+var crzl[N] real >= 0;
+var crzu[N] real >= 0;
 var crz[N] real >= 0;
-var crz_x_q[N] real >= 0;
-
-var p[N] binary;
-var q[N] binary;
-
-# Unterbrechungsratio
-var Ru real >= 0 <= 1;
-var x[N] real >= -1 <= 1;
-# Kürzungsratio
-var Rz real >= 0 <= 1;
-var y[N] >= -infinity; #-1 <= 1;
 
 ### Zielfunktion
-# Minimiere Ratioabweichungskosten; der letzte Term dient dazu bei Kosten von 0 so viele mit ins Boot zu holen wie möglich
-minimize obj: sum <n> in N: cru_x_p[n] + sum <n> in N: crz_x_q[n] + sum <n> in N: ( q[n] + p[n] );
+# Minimiere Ratioabweichungskosten
+minimize obj: sum <n> in N: ( cru[n] + crz[n] );
 
-### Nebenbedingungen
-# Konvexe Kosten Ratioabweichung Unterbrechung
-subto convexCostsURatio:
-      forall <i, k> in N * { 1 .. numIntervals }: cru[i] >= slope[k] * ( x[i] - knotsD[k] ) + h(knotsD[k], a, d, e);
-# Konvexe Kosten Ratioabweichung Kuerzung
-subto convexCostsZRatio:
-      forall <i, k> in N * { 1 .. numIntervals }: crz[i] >= slope[k] * ( y[i] - knotsD[k] ) + h(knotsD[k], a, d, e);
+# Quadratische Kosten Ratioabweichung Unterbrechung
+subto quadraticCostsURatioLb:
+      forall <i> in N: crul[i] >= aDul[i] * unt_neg[i]^2;
+subto quadraticCostsURatioUb:
+      forall <i> in N: cruu[i] >= aDuu[i] * unt_pos[i]^2;
+subto CostsRatioUbLb:
+      forall <i> in N: cru[i] == crul[i] + cruu[i];
+# Quadratische Kosten Ratioabweichung Slack
+subto quadraticCostsZRatioLb:
+      forall <i> in N: crzl[i] >= aDzl[i] * kuz_neg[i]^2;
+subto quadraticCostsZRatioUb:
+      forall <i> in N: crzu[i] >= aDzu[i] * kuz_pos[i]^2;
+subto CostsRatioZUbLb:
+      forall <i> in N: crz[i] == crzl[i] + crzu[i];
 
-subto prod1:
-      forall <n> in N: Mu * p[n] >= unt_abs[n];
-subto prod2:
-      forall <n> in N: Mz * q[n] >= kuz_abs[n];
-
-subto prods1:
-      forall <n> in N: cru_x_p[n] <= Mu * p[n];
-subto prods2:
-      forall <n> in N: cru_x_p[n] <= cru[n];
-subto prods3:
-      forall <n> in N: cru_x_p[n] >= cru[n] - Mu * ( 1 - p[n] );
-
-subto prodz1:
-      forall <n> in N: crz_x_q[n] <= Mz * q[n];
-subto prodz2:
-      forall <n> in N: crz_x_q[n] <= crz[n];
-subto prodz3:
-      forall <n> in N: crz_x_q[n] >= crz[n] - Mz * ( 1 - q[n] );
-
-#
-subto unterbrechungsgrenzen:
-      forall <n> in N: ul[n] <= u[n] <= uu[n];
-subto unterbrechungsbetragssumme:
-      sum_abs_unt == sum <n> in N: unt_abs[n];
-
-subto unterbrechungsratio1:
-      forall <n> in N do if ul[n] < 0 and uu[n] > 0 then - unt_neg[n]/ul[n] + unt_pos[n]/uu[n] + x[n] == Ru end;
-subto unterbrechungsratio2:
-      forall <n> in N do if ul[n] == 0 and uu[n] > 0 then unt_pos[n]/uu[n] + x[n] == Ru end;
-subto unterbrechungsratio3:
-      forall <n> in N do if ul[n] < 0 and uu[n] == 0 then - unt_neg[n]/ul[n] + x[n] == Ru end;
-subto unterbrechungsratio4:
-      forall <n> in N do if ul[n] == 0 and uu[n] == 0 then unt_neg[n] + unt_pos[n] == 0 end;
-#
-#
-#subto kuerzungsgrenzen:
-#      forall <n> in N: zl[n] <= z[n] <= zu[n];
-subto kuerzungsbetragssumme:
-      sum_abs_kuz == sum <n> in N: kuz_abs[n];
-
-subto kuerzungsratio1:
-      forall <n> in N do if zl[n] < 0 and zu[n] > 0 then - kuz_neg[n]/zl[n] + kuz_pos[n]/zu[n] + y[n] == Rz end;
-subto kuerzungsratio2:
-      forall <n> in N do if zl[n] == 0 and zu[n] > 0 then kuz_pos[n]/zu[n] + y[n] == Rz end;
-subto kuerzungsratio3:
-      forall <n> in N do if zl[n] < 0 and zu[n] == 0 then - kuz_neg[n]/zl[n] + y[n] == Rz end;
-subto kuerzungsratio4:
-      forall <n> in N do if zl[n] == 0 and zu[n] == 0 then kuz_neg[n] + kuz_pos[n] == 0 end;
-
-
+# Unterbrechungen
+# u < 0 -> Entryunterbrechung
+# u > 0 -> Exitunterbrechung
 # Betrag der Unterbrechung
 subto uabs1:
       forall <n> in N: u[n] == unt_pos[n] - unt_neg[n];
 subto uabs2:
       forall <n> in N: unt_abs[n] == unt_pos[n] + unt_neg[n];
+# Unterbrechungsgrenzen
+subto unterbrechungsgrenzen:
+      forall <n> in N: ul[n] <= u[n] <= uu[n];
+# Unterbrechungsbetragssumme
+subto unterbrechungsbetragssumme:
+      sum_abs_unt == sum <n> in N: unt_abs[n];
+
+# Kürzungen
+# k < 0 -> Entrykürzung
+# k > 0 -> Exitkürzung
 # Betrag der Kürzungen
 subto kabs1:
       forall <n> in N: z[n] == kuz_pos[n] - kuz_neg[n];
 subto kabs2:
       forall <n> in N: kuz_abs[n] == kuz_pos[n] + kuz_neg[n];
+# Kürzungsgrenzen
+subto kuerzungsgrenzen:
+      forall <n> in N: zl[n] <= z[n] <= zu[n];
+# Kürzungsbetragssumme
+subto kuerzungsbetragssumme:
+      sum_abs_kuz == sum <n> in N: kuz_abs[n];
 
 # Kapazitätsgrenzen müssen eingehalten werden
 subto capacities2_4:
