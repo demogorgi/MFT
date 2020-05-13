@@ -1,6 +1,8 @@
 # MFT Stufe 1 und Stufe 2
+Im folgenden wird die hier vorliegende Modellierung der beiden Stufen des MFT beschrieben.
 
 ## Stufe 1
+Berechnung der Pufferbewirtschaftung und der Flussverteilung.
 
 ### Aufruf
 #### Berechnung eines Szenarios
@@ -21,6 +23,7 @@ Insbesondere eine png-Datei, die die Ergebnisse visualisiert.
 ![](example_result_step1.png)
 
 ## Stufe 2
+Berechnung der globalen und gasbeschaffenheitsspezifischen Regelenergie, einzusetzende MBI, sowie erforderliche Unterbrechunngen und Kürzungen.
 
 ### Aufruf
 #### Berechnung eines Szenarios
