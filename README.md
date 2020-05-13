@@ -47,6 +47,8 @@ Die Sufe 2 arbeitet in vier Schritten:
 2.3. In diesem Schritt werden die Kürzungs- und Unterbrechungsmengen aus Schritt 2.2 soweit möglich gleichmäßig auf weitere Knoten verteilt, die ein gemeinsames Engpassgebiet innerhalb einer Gasbeschaffenheitszone bilden.
 
 2.4 Dieser Schritt ist noch nicht implementiert, aber er funktioniert ganz ähnlich zu Schritt 2.2. In der Gasbeschaffenheit H müssen zwei Engpasszonen modelliert werden. Die Berechnung erfolgt dann analog zu Schritt 2.2 jedoch komplett ohne den L-Gas-Teil. Das Ergebnis sind dann die Restmengen, die über marktbasierte Instrumente (MBI) abgewickelt werden.
+
+Hinweis: Das Thema Überschreitung von Kürzungsgrenzen wird in der aktuellen Modellierung für Stufe 2 noch nicht berücksichtigt. Es sollte letzendlich genau so laufen wie in Stufe 1.
 ### Rechenbeispiele
 Gedanklich sollen die unten in den Bildern dargestellten Werte der Zustand NACH der Berechnung von Stufe 1 sein. Die Kapazitäten sind die Kapazitäten für Stufe 2, die sich aus den Kapazitäten und den Flüssen aus Stufe 1 ergeben. Die Planwerte und das Puffern aus Stufe 1 sind also schon verrechnet.
 #### Szenario 1
