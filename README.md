@@ -44,9 +44,9 @@ Die Sufe 2 arbeitet in vier Schritten:
 2.3. In diesem Schritt werden die Kürzungs- und Unterbrechungsmengen aus Schritt 2.2 soweit möglich gleichmäßig auf weitere Knoten verteilt, die ein gemeinsames Engpassgebiet innerhalb einer Gasbeschaffenheitszone bilden.
 
 2.4 Dieser Schritt ist noch nicht implementiert, aber er funktioniert ganz ähnlich zu Schritt 2.2. In der Gasbeschaffenheit H müssen zwei Engpasszonen modelliert werden. Die Berechnung erfolgt dann analog zu Schritt 2.2 jedoch komplett ohne den L-Gas-Teil. Das Ergebnis sind dann die Restmengen, die über marktbasierte Instrumente (MBI) abgewickelt werden.
-#### Rechenbeispiele
+### Rechenbeispiele
 Gedanklich sollen die unten in den Bildern dargestellten Werte der Zustand NACH der Berechnung von Stufe 1 sein. Die Kapazitäten sind die Kapazitäten für Stufe 2, die sich aus den Kapazitäten und den Flüssen aus Stufe 1 ergeben. Die Planwerte und das Puffern aus Stufe 1 sind also schon verrechnet.
-##### Szenario 1
+#### Szenario 1
 Beobachtung 1: Bei B und C zusammen müssen 25 Einheiten durch Unterbrechung und Kürzung "weg", da sonst die Kapazitäten zu A in manchen Szenarien nicht ausreichen, um die Bilanz auszugleichen.
 
 Beobachtung 2: Zwischen B und C gibt es keinen Engpass.
@@ -54,7 +54,7 @@ Beobachtung 2: Zwischen B und C gibt es keinen Engpass.
 Beobachtugn 3: Das Unterbrechungspotenzial bei B und C ist in Summe kleiner als -25 Einheiten, nämlich -15 Einheiten. Diese werden also komplett unterbrochen. Die verbleibenden 10 Einheiten müssen also gekürzt werden. Da das Kürzungspotenzial bei beiden gleich ist, werden bei B und bei C folglich jeweils -5 Einheiten gekürzt.
 ![](example_result_step2_szenario1.png)
 
-##### Szenario 2
+#### Szenario 2
 Beobachtung 1: Es hat sich im Vergleich zu Szenario 1 lediglich das Entryunterbrechungspotenzial bei C geändert von -10 auf -50.
 
 Beobachtugn 2: Das Unterbrechungspotenzial bei B und bei C ist nun ausreichend, um die erforderlichen 25 Einheiten darzustellen.
