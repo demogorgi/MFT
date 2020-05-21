@@ -2,7 +2,12 @@
 param dmax := max <i, j> in E : dist[i, j];
 
 # Normale Kantenflüsse: aF = Koeffizienten für Parabel zwischen capl und capu mit Scheitelpunkt (capl, 0) und Maximum dist / dmax bei capu.
-param aF[<i, j> in E] := if capu[i,j] == capl[i,j] then 0 else ( dist[i,j] / dmax ) / ( capu[i, j] - capl[i, j] ) ** 2 end;
+#param aF[<i, j> in E] := if capu[i,j] == capl[i,j] then 0 else ( dist[i,j] / dmax ) / ( capu[i, j] - capl[i, j] ) ** 2 end;
+
+param aF[<i, j> in E] := if capu[i,j] == capl[i,j] then 0 else ( dist[i,j] / dmax ) end;
+
+param s := 0.4;
+param b := 1.9;
 
 ### Variablen
 # Kantenflussvariablen
@@ -27,9 +32,17 @@ minimize obj: sum <i,j> in E: cf[i,j];
 
 ### Nebenbedingungen
 # Quadratische Kosten für Fluss
-subto quadraticCostsFlow:
-      #forall <i, j> in E: cf[i, j] >= aF[i,j] * ( f[i, j]^2 - 2 * f[i,j] * capl[i,j] + capl[i,j] * capl[i,j] );
-      forall <i, j> in E: cf[i, j] >= aF[i,j] * ( f[i, j] - capl[i,j] )^2;
+#subto quadraticCostsFlow:
+##      forall <i, j> in E: cf[i, j] >= aF[i,j] * ( f[i, j] - capl[i,j] )^2;
+#      forall <i, j> in E: cf[i, j] >= aF[i,j] * ( f[i, j] - capl[i,j] )^2 + b * f[i,j];
+      
+subto quadraticCostsFlow: # param s = 0 -> lineare Kostenfunktion; s = 0.5 -> Gleichverteilung nach Aufwand; s = 1 -> Gleichverteilung
+      forall <i, j> in E: 
+             if s <= 0.5 then
+                  cf[i,j] >= (-capl[i,j] + f[i,j]) * (( 0.5 * aF[i,j] * (1 - 2 * s) + (2 * aF[i,j] * (-capl[i,j] + (capl[i,j] + capu[i,j])/2)^2 * s)/(-capl[i,j] + capu[i,j])^2)/(-capl[i,j] + (capl[i,j] + capu[i,j])/2) + (((aF[i,j] - 0.5 * aF[i,j] * (1 - 2 * s) - (2 * aF[i,j] * (-capl[i,j] + (capl[i,j] + capu[i,j])/2)^2 * s)/(-capl[i,j] + capu[i,j])^2)/( capu[i,j] - (capl[i,j] + capu[i,j])/2) - ( 0.5 * aF[i,j] * (1 - 2 * s) + (2 * aF[i,j] * (-capl[i,j] + (capl[i,j] + capu[i,j])/2)^2 * s)/(-capl[i,j] + capu[i,j])^2)/(-capl[i,j] + (capl[i,j] + capu[i,j])/2)) * (-(capl[i,j] + capu[i,j])/2 + f[i,j]))/(-capl[i,j] + capu[i,j]))
+             else
+                  cf[i,j] >= (-capl[i,j] + f[i,j]) * ((      ((-capl[i,j] + (capl[i,j]+capu[i,j])/2)^2 * (-1 + 2 * aF[i,j] + 2 * (1 - aF[i,j]) * s))/(-capl[i,j] + capu[i,j])^2)/(-capl[i,j] + (capl[i,j]+capu[i,j])/2) + (((-1 + 2 * aF[i,j] + 2 * (1 - aF[i,j]) * s - ((-capl[i,j] + (capl[i,j]+capu[i,j])/2)^2 * (-1 + 2 * aF[i,j] + 2 * (1 - aF[i,j]) * s))/(-capl[i,j] + capu[i,j])^2)/( capu[i,j] - (capl[i,j]+capu[i,j])/2) - (((-capl[i,j] + (capl[i,j]+capu[i,j])/2)^2 * (-1 + 2 * aF[i,j] + 2 * (1 - aF[i,j]) * s))/(-capl[i,j] + capu[i,j])^2)/(-capl[i,j] + (capl[i,j]+capu[i,j])/2)) * (-(capl[i,j]+capu[i,j])/2 + f[i,j]))/(-capl[i,j] + capu[i,j]))
+             end;
 
 # Kann in Mathematica genutzt werden, um die Kostenfunktionen zu plotten. Hinter der jeweils letzten Funktion muss ein "," entfernt werden.
 # Und "e-06" etc. muss ersetzt werden durch "*^-6".
@@ -189,9 +202,9 @@ do print '-RUBY-dotFile << "\nnode [ fillcolor = ', '\"', "#", 'fbc490\" ];\n"';
 do forall <n> in N with B[n] <  0 do print '-RUBY-dotFile << "', n, ' [ label = \"', n, ': ', B[n], "\\np in [#{", pl[n], ".to_f.signif(4)}, #{", pu[n], ".to_f.signif(4)}]: #{buffer['", n, "'].to_f.signif(4)} (#{cbuffer['", n, "'].to_f.signif(4)})\\nu in [", ul[n], ", ", uu[n], "]: #{interrupt['", n, "'].to_f.signif(4)} (#{cinterrupt['", n, "'].to_f.signif(4)})\\nz in [#{", zl[n], ".to_f.signif(4)}, #{", zu[n], ".to_f.signif(4)}]: #{curtail['", n, "'].to_f.signif(4)} (#{ccurtail['", n, "'].to_f.signif(4)})\\nZ: #{slack['", n, "'].to_f.signif(4)} (#{cslack['", n, "'].to_f.signif(4)})", '\"];\n"';
 #
 # Die nächste Zeile kann genutzt werden, wenn alle Kanten dargestellt werden sollen.
-#do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif(4)})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.to_f.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif(4)} in [', "#", '{', capl[i, j], '.to_f.signif(4)}', ", #", '{', capu[i, j], ".to_f.signif(4)}]", '\" ]\n"';
+do forall <i, j> in E do print '-RUBY-dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif(4)})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.to_f.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif(4)} in [', "#", '{', capl[i, j], '.to_f.signif(4)}', ", #", '{', capu[i, j], ".to_f.signif(4)}]", '\" ]\n"';
 # Die nächste Zeile kann genutzt werden, wenn nur die Kanten mit Kosten durch Flüsse dargestellt werden sollen
-do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif(4) > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif(4)})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.to_f.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif(4)} in [', "#", '{', capl[i, j], '.to_f.signif(4)}', ", #", '{', capu[i, j], ".to_f.signif(4)}]", '\" ]\n" end';
+#do forall <i, j> in E do print '-RUBY-if cost["', i, '->', j, '"].to_f.signif(4) > 0 then dotFile << "', i, '->', j, ' [ label = \"', "(#", '{cost["', i, '->', j, '"].to_f.signif(4)})', "\\nA: #{", dist[i,j], ".to_f.signif(1)}/#{", dmax, ".to_f.signif(1)} = #{", dist[i,j]/dmax, '.to_f.signif(1)}', "\\n#", '{flow["', i, '->', j, '"].to_f.signif(4)} in [', "#", '{', capl[i, j], '.to_f.signif(4)}', ", #", '{', capu[i, j], ".to_f.signif(4)}]", '\" ]\n" end';
 do print '-RUBY-dotFile << "\noverlap = false\n"';
 do print '-RUBY-dotFile << "\nlabeljust=left"';
 do print '-RUBY-dotFile << "\n}"';

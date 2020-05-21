@@ -23,7 +23,7 @@ param capu[E] :=
 
 param dist[E] :=
 <"A","D"> 100,
-<"B","D"> 100 default 50;
+<"B","D"> 100 default 40;
 
 # was kann aus dem Puffer entnommen werden?
 param pl[N] :=
